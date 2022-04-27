@@ -15,8 +15,7 @@ record Proset {ℓ : Level}(A : Set ℓ) : Set (lsuc ℓ) where
    ptrans : ∀{a b c : A} → rel a b → rel b c → rel a c
 open Proset {{...}}
 
-
-record MonProset {ℓ : Level}(P : Set ℓ){{ P-pro : Proset P}} : Set (lsuc ℓ) where
+record MonProset {ℓ : Level}(P : Set ℓ){{ _ : Proset P}} : Set (lsuc ℓ) where
  constructor MkMonProset
  field
    _⊙_ : P → P → P
@@ -28,10 +27,9 @@ record MonProset {ℓ : Level}(P : Set ℓ){{ P-pro : Proset P}} : Set (lsuc ℓ
 
    symm : ∀{a b : P} → a ⊙ b ≡ b ⊙ a
    compat : ∀{a b : P} → rel a b → (∀{c : P} → (rel (a ⊙ c) (b ⊙ c)))
-
 open MonProset {{...}}
 
-record Lineale {ℓ : Level} (L : Set ℓ) {{ Pro : Proset L }} {{ Mpro : MonProset L}}: Set (lsuc ℓ) where
+record Lineale {ℓ : Level} (L : Set ℓ) {{ _ : Proset L }} {{ _ : MonProset L}}: Set (lsuc ℓ) where
     constructor MkLineale
     field
         _⊸_ : L → L → L
