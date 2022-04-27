@@ -1,0 +1,4 @@
+name: dial
+include: .
+depend: cubical standard-library 
+flags: --cubical
