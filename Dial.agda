@@ -9,11 +9,13 @@ module defs {ℓ : Level}{L : Set ℓ}
     {{ _ : MonProset L }}
     {{ _ : Lineale L}} where    
     
-    open module Pro = Proset Pro
+    open module Pro = Proset Pro renaming (rel to _≤L_)
 
-    _≤L_ : L → L → Set 
-    x ≤L y = rel x y
-    
+    {- TODO 
+        * wrap these constructions in a PreCategory definition
+        * Don't implicitly use Agda's Set as the base Category
+            parameterize definition by a base PreCategory
+    -}
     record Obj : Set (lsuc ℓ) where 
         field 
             {U} : Set ℓ
