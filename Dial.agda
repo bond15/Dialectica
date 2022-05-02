@@ -187,9 +187,7 @@ module defs {ℓ : Level}{L : Set ℓ}
             where 
                 cond : {u : U × W}{y : (S → Y) × (V → T)} → 
                     (α ⊗ᵣ β) u ((F⊗ {f = f}{F}{g}{G}) y) ≤L (ɣ ⊗ᵣ ε) ((⟨ f , g ⟩) u) y
-                cond {u , w} {sy , vt} = bifun (α u (F (sy (g w)))) (β w (G (vt (f u)))) (ɣ (f u) (sy (g w))) (ε (g w) (vt (f u)))
-                                        -- the main arguments (rest were infered)
-                                         p₁ p₂
+                cond {u , w} {sy , vt} = bifun _ _ _ _ p₁ p₂
 
 module asPreCat {ℓ : Level}{L : Set ℓ}
     {{ Pro : Proset L }}
