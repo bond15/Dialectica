@@ -16,6 +16,35 @@ module defs {ℓ : Level}{L : Set ℓ}
             parameterize definition by a base PreCategory
                 use display category?
     -}
+
+        {-
+        Obj : U → X → L 
+
+        Hom : given 
+                U    V
+                |    |
+               α|   β|
+                |    |
+                X    Y
+                |    |
+                L    L
+
+            have maps f,F
+
+                   f
+                U--->V
+                |    |
+               α|   β|
+                |  F |
+                X<---Y
+                |    |
+                L    L
+
+            st 
+                given u,y
+
+                α(u,F(y)) rel β(f(u),y)
+    -}
     record DObj : Set (lsuc ℓ) where 
         constructor _⇒_∍_
         field 
@@ -84,60 +113,34 @@ module defs {ℓ : Level}{L : Set ℓ}
     -- and the fact that Set has exponentials? (V → X)
 
 {-
+    U   V 
+    |   |
+   α|  β|
+    |   |
+    X   Y
+
+    to
+
     U × V
-    \  /
-     \/
-     /\
-    X  Y
+      |
+      |
+      |
+ (V→X)×(U→Y)
 -}
     _⊗ₒ_ : (A B : DObj) → DObj
     (U ⇒ X ∍ α) ⊗ₒ (V ⇒ Y ∍ β) = (U × V) ⇒ ((V → X) × (U → Y)) ∍ (α ⊗ᵣ β)
 
+
     {-
-        Obj : U → X → L 
+        Intuition 
+            let sz and wt be "bridges between hom squares"
+            pre and post compose them with the existing "hom maps" f, F, g, G
+              g          F
+            V--->S....Z---->X
 
-        Hom : given 
-                U    V
-                |    |
-               α|   β|
-                |    |
-                X    Y
-                |    |
-                L    L
-
-            have maps f,F
-
-                   f
-                U--->V
-                |    |
-               α|   β|
-                |  F |
-                X<---Y
-                |    |
-                L    L
-
-            st 
-                given u,y
-
-                α(u,F(y)) rel β(f(u),y)
+              f          G
+            U--->W....T---->Y
     -}
-
-    {- 
-        Given 
-                  f         g
-                U--->W    V--->S
-                |    |    |    |
-               α|   β|   δ|   ε|
-                |  F |    |  G |
-                X<---Z    Y<---T
-                |    |    |    |
-                L    L    L    L
-
-            use f,F,g,G
-
-            cross squares..???
-    -}
-
     F⊗ : ∀{S Z W T V X U Y : Set ℓ} → 
             {f : U → W}{F : Z → X}{g : V → S}{G : T → Y} → 
             (S → Z) × (W → T) → (V → X) × (U → Y)
@@ -169,6 +172,7 @@ module defs {ℓ : Level}{L : Set ℓ}
 
     -}
 
+    -- should be from an import
     ⟨_,_⟩ : {A B C D : Set ℓ} → (A → C) → (B → D) → (A × B) → C × D 
     ⟨ f , g ⟩ x = (f (proj₁ x)) , (g (proj₂ x))
 
@@ -184,7 +188,7 @@ module defs {ℓ : Level}{L : Set ℓ}
             F⊗ {f = f}{F}{g}{G} ⟪
             -- Hom condition
             λ {u y} → cond {u} {y}
-            where 
+            where      -- "corners" of the square u and y
                 cond : {u : U × W}{y : (S → Y) × (V → T)} → 
                     (α ⊗ᵣ β) u ((F⊗ {f = f}{F}{g}{G}) y) ≤L (ɣ ⊗ᵣ ε) ((⟨ f , g ⟩) u) y
                 cond {u , w} {sy , vt} = bifun _ _ _ _ p₁ p₂
@@ -242,4 +246,4 @@ module asPreCat {ℓ : Level}{L : Set ℓ}
         ; idr = {!   !} --⊚-idr
         ; idl = {!   !} --⊚-idl
         ; assoc = {!   !} --⊚-assoc
-        } 
+        }  
