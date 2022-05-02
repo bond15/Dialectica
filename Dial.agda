@@ -5,7 +5,7 @@ open import Lineale
 
 module defs {ℓ : Level}{L : Set ℓ}
     {{ Pro : Proset L }}
-    {{ _ : MonProset L }}
+    {{ Mon : MonProset L }}
     {{ _ : Lineale L}} where    
     
     open module Pro = Proset Pro renaming (rel to _≤L_)
@@ -32,7 +32,7 @@ module defs {ℓ : Level}{L : Set ℓ}
             F : Y → X
             cond : ∀ {u : U} {y : Y} → α u (F y) ≤L β (f u) y 
 
-
+    infixl 20 _；_
     _；_ : ∀{ℓ : Level} {A B C : Set ℓ} → (A → B) → (B → C) → (A → C) 
     _；_ f g x = g (f x)
 
@@ -71,6 +71,126 @@ module defs {ℓ : Level}{L : Set ℓ}
     ⊚-assoc = refl , refl
 
     
+-- Symetric Monoidal Cartesian Closed 
+    open module Mon = MonProset Mon renaming (_⊙_ to _⊗L_)
+
+
+    _⊗ᵣ_ : ∀{U X V Y : Set ℓ} → (U → X → L) → (V → Y → L) → ((U × V) → ((V → X) × (U → Y)) → L)
+    (α ⊗ᵣ β) (u , v) (f , g) = α u (f v) ⊗L β v (g u)
+
+    -- pair inputs 
+    -- cross output to input maps?
+    -- utilizing the product of Set? (U × V)
+    -- and the fact that Set has exponentials? (V → X)
+
+{-
+    U × V
+    \  /
+     \/
+     /\
+    X  Y
+-}
+    _⊗ₒ_ : (A B : DObj) → DObj
+    (U ⇒ X ∍ α) ⊗ₒ (V ⇒ Y ∍ β) = (U × V) ⇒ ((V → X) × (U → Y)) ∍ (α ⊗ᵣ β)
+
+    {-
+        Obj : U → X → L 
+
+        Hom : given 
+                U    V
+                |    |
+               α|   β|
+                |    |
+                X    Y
+                |    |
+                L    L
+
+            have maps f,F
+
+                   f
+                U--->V
+                |    |
+               α|   β|
+                |  F |
+                X<---Y
+                |    |
+                L    L
+
+            st 
+                given u,y
+
+                α(u,F(y)) rel β(f(u),y)
+    -}
+
+    {- 
+        Given 
+                  f         g
+                U--->W    V--->S
+                |    |    |    |
+               α|   β|   δ|   ε|
+                |  F |    |  G |
+                X<---Z    Y<---T
+                |    |    |    |
+                L    L    L    L
+
+            use f,F,g,G
+
+            cross squares..???
+    -}
+
+    F⊗ : ∀{S Z W T V X U Y : Set ℓ} → 
+            {f : U → W}{F : Z → X}{g : V → S}{G : T → Y} → 
+            (S → Z) × (W → T) → (V → X) × (U → Y)
+    F⊗ {f = f} {F} {g} {G} (sz , wt) = (g ； sz ； F) , (f ； wt ； G)
+
+
+    {- 
+
+        A    C    B    D
+          f         g
+        U--->V    W--->S
+        |    |    |    |
+       α|   γ|   β|   ε|
+        | F  |    | G  |
+        X<---Y    Z<---T
+
+        Hom A C   Hom B D
+
+        To
+
+    DHom A ⊗ₒ B         C ⊗ₒ D 
+                  ?
+         U × W -------> V × S
+           |              |
+     α ⊗ᵣ β|              | γ ⊗ᵣ ε
+           |       ?      |
+      (W→X)×(U→Z)<---(S→Y)×(V→T)
+
+
+    -}
+
+    ⟨_,_⟩ : {A B C D : Set ℓ} → (A → C) → (B → D) → (A × B) → C × D 
+    ⟨ f , g ⟩ x = (f (proj₁ x)) , (g (proj₂ x))
+
+    
+    _⊗ₐ_ : {A B C D : DObj} → 
+        DHom A C → DHom B D → DHom (A ⊗ₒ B) (C ⊗ₒ D)
+    _⊗ₐ_ {U ⇒ X ∍ α} {W ⇒ Z ∍ β}
+         {V ⇒ Y ∍ ɣ} {S ⇒ T ∍ ε} 
+         (f ⟫ F ⟪ p₁)(g ⟫ G ⟪ p₂) = 
+            -- first is a map between products 
+            ⟨ f , g ⟩ ⟫ 
+            -- map between pairs of maps
+            F⊗ {f = f}{F}{g}{G} ⟪
+            -- Hom condition
+            λ {u y} → cond {u} {y}
+            where 
+                cond : {u : U × W}{y : (S → Y) × (V → T)} → 
+                    (α ⊗ᵣ β) u ((F⊗ {f = f}{F}{g}{G}) y) ≤L (ɣ ⊗ᵣ ε) ((⟨ f , g ⟩) u) y
+                cond {u , w} {sy , vt} = bifun (α u (F (sy (g w)))) (β w (G (vt (f u)))) (ɣ (f u) (sy (g w))) (ε (g w) (vt (f u)))
+                                        -- the main arguments (rest were infered)
+                                         p₁ p₂
+
 module asPreCat {ℓ : Level}{L : Set ℓ}
     {{ Pro : Proset L }}
     {{ _ : MonProset L }}
@@ -121,7 +241,7 @@ module asPreCat {ℓ : Level}{L : Set ℓ}
         ; id = Did
         ; _≣_ = _≡h_
         ; _∘_ = _⊚_
-        ; idr = ⊚-idr
-        ; idl = ⊚-idl
-        ; assoc = ⊚-assoc
+        ; idr = {!   !} --⊚-idr
+        ; idl = {!   !} --⊚-idl
+        ; assoc = {!   !} --⊚-assoc
         } 
