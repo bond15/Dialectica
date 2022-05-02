@@ -193,6 +193,8 @@ module defs {ℓ : Level}{L : Set ℓ}
                     (α ⊗ᵣ β) u ((F⊗ {f = f}{F}{g}{G}) y) ≤L (ɣ ⊗ᵣ ε) ((⟨ f , g ⟩) u) y
                 cond {u , w} {sy , vt} = bifun _ _ _ _ p₁ p₂
 
+-- show ⊗ is funtorial
+
 module asPreCat {ℓ : Level}{L : Set ℓ}
     {{ Pro : Proset L }}
     {{ _ : MonProset L }}
