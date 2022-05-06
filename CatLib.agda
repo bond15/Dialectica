@@ -31,12 +31,13 @@ module CatLib where
             _⇒_ : Ob → Ob → Set h
             Hom-set : (x y : Ob) → is-set (x ⇒ y) -- if p : x ≡ y, q : x ≡ y, then p ≡ q
             id : ∀ {x} → x ⇒ x
-            _≣_ : ∀{A B}→ (f g : A ⇒ B) → Set h
+            -- how to ensure this behaves correctly?
+            --_≣_ : ∀{A B}→ (f g : A ⇒ B) → Set h
             _∘_ : ∀{x y z} → y ⇒ z → x ⇒ y → x ⇒ z
 
-            idr : ∀{x y}{f : x ⇒ y} → (f ∘ id) ≣ f 
-            idl : ∀{x y}{f : x ⇒ y} → id ∘ f ≣ f
-            assoc : ∀{w x y z} {f : y ⇒ z}{g : x ⇒ y}{h : w ⇒ x} → f ∘ (g ∘ h) ≣ (f ∘ g) ∘ h
+            idr : ∀{x y}{f : x ⇒ y} → (f ∘ id) ≡ f 
+            idl : ∀{x y}{f : x ⇒ y} → id ∘ f ≡ f
+            assoc : ∀{w x y z} {f : y ⇒ z}{g : x ⇒ y}{h : w ⇒ x} → f ∘ (g ∘ h) ≡ (f ∘ g) ∘ h
         infixr 40 _∘_
 
     module ObjectProduct{o ℓ : Level} (𝒞 : PreCat o ℓ) where
@@ -56,9 +57,9 @@ module CatLib where
                 π₂    : A×B ⇒ B
                 ⟨_,_⟩ : C ⇒ A → C ⇒ B → C ⇒ A×B
 
-                project₁ : π₁ ∘ ⟨ h , i ⟩ ≣ h
-                project₂ : π₂ ∘ ⟨ h , i ⟩ ≣ i
-                unique   : π₁ ∘ h ≣ i → π₂ ∘ h ≣ j → ⟨ i , j ⟩ ≣ h 
+                project₁ : π₁ ∘ ⟨ h , i ⟩ ≡ h
+                project₂ : π₂ ∘ ⟨ h , i ⟩ ≡ i
+                unique   : π₁ ∘ h ≡ i → π₂ ∘ h ≡ j → ⟨ i , j ⟩ ≡ h 
 
         
         module Morphisms where 
@@ -115,7 +116,7 @@ module CatLib where
         record IsTerminal(⊤ : Ob) : Set (o ⊔ h) where
             field
                 ! : {A : Ob} → (A ⇒ ⊤)
-                !-unique : ∀{A : Ob} → (f : A ⇒ ⊤) → ! ≣ f
+                !-unique : ∀{A : Ob} → (f : A ⇒ ⊤) → ! ≡ f
 
         record TerminalT : Set (o ⊔ h) where 
             field 
@@ -143,10 +144,10 @@ module CatLib where
 
         record IsEqualizer {E : Ob} (arr : E ⇒ A) (f g : A ⇒ B) : Set (o ⊔ ℓ) where  
             field 
-                equality : f ∘ arr ≣ g ∘ arr 
-                equalize : ∀{h : X ⇒ A} → f ∘ h ≣ g ∘ h → X ⇒ E
-                universal : ∀{eq : f ∘ h ≣ g ∘ h} → h ≣ arr ∘ equalize eq
-                unique : ∀{eq : f ∘ h ≣ g ∘ h} → h ≡ arr ∘ i → i ≣ equalize eq
+                equality : f ∘ arr ≡ g ∘ arr 
+                equalize : ∀{h : X ⇒ A} → f ∘ h ≡ g ∘ h → X ⇒ E
+                universal : ∀{eq : f ∘ h ≡ g ∘ h} → h ≡ arr ∘ equalize eq
+                unique : ∀{eq : f ∘ h ≡ g ∘ h} → h ≡ arr ∘ i → i ≡ equalize eq
 
         record EqualizerT (f g : A ⇒ B) : Set (o ⊔ ℓ) where 
             field 
@@ -163,15 +164,15 @@ module CatLib where
 
         record IsPullback {P : Ob} (p₁ : P ⇒ X) (p₂ : P ⇒ Y)(f : X ⇒ Z)(g : Y ⇒ Z) : Set (o ⊔ ℓ) where 
             field
-                commute : f ∘ p₁ ≣ g ∘ p₂
-                universal : ∀{h₁ : A ⇒ X}{h₂ : A ⇒ Y} → f ∘ h₁ ≣ g ∘ h₂ → A ⇒ P 
-                unique : ∀{eq : f ∘ h₁ ≣ g ∘ h₂} → 
-                            p₁ ∘ i ≣ h₁ → p₂ ∘ i ≣ h₂ → 
-                            i ≣ universal eq
-                p₁∘universal≈h₁  : ∀ {eq : f ∘ h₁ ≣ g ∘ h₂} →
-                         p₁ ∘ universal eq ≣ h₁
-                p₂∘universal≈h₂  : ∀ {eq : f ∘ h₁ ≣ g ∘ h₂} →
-                         p₂ ∘ universal eq ≣ h₂
+                commute : f ∘ p₁ ≡ g ∘ p₂
+                universal : ∀{h₁ : A ⇒ X}{h₂ : A ⇒ Y} → f ∘ h₁ ≡ g ∘ h₂ → A ⇒ P 
+                unique : ∀{eq : f ∘ h₁ ≡ g ∘ h₂} → 
+                            p₁ ∘ i ≡ h₁ → p₂ ∘ i ≡ h₂ → 
+                            i ≡ universal eq
+                p₁∘universal≈h₁  : ∀ {eq : f ∘ h₁ ≡ g ∘ h₂} →
+                         p₁ ∘ universal eq ≡ h₁
+                p₂∘universal≈h₂  : ∀ {eq : f ∘ h₁ ≡ g ∘ h₂} →
+                         p₂ ∘ universal eq ≡ h₂
 
         record PullbackT (f : X ⇒ Z) (g : Y ⇒ Z) : Set (o ⊔ ℓ) where 
             field 
