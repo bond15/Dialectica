@@ -27,6 +27,11 @@ _≤²_ : Two → Two → Set
 ⊥ ≤² ⊤ = Empty
 ⊥ ≤² ⊥ = Empty
 
+≤-trans : {x y z : Two} → x ≤² y → y ≤² z → x ≤² z 
+≤-trans {⊤} {⊤} {⊤} tt tt = tt
+≤-trans {⊤} {⊤} {⊥} _ ()
+≤-trans {⊤} {⊥} {_} () _
+
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
     field
@@ -62,6 +67,8 @@ record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where
         F : U → Y → X 
         cond-on-f&F : (u : U)(y : Y) → α u (F u y) ≤² β (f u) y
 
+_⇒ᴰ_ : DialSet → DialSet → Set
+_⇒ᴰ_ = DialSetMap
 
 {-
     show DialSets is category
@@ -73,11 +80,11 @@ A := (U, X, α)
 B := (V, Y, β)
 C := (W, Z, γ)
 -}
-_∘ᴰ_ : {A B C : DialSet} → (g : DialSetMap B C) → ( f : DialSetMap A B) → DialSetMap A C
-_∘ᴰ_ {A} {B} {C} (f₂ ∧ F₂ st cond-on-f&F₂) (f₁ ∧ F₁ st cond-on-f&F₁) = f' ∧  F' st  cond
+_∘ᴰ_ :{A B C : DialSet} → (B ⇒ᴰ C) → (A ⇒ᴰ B) → (A ⇒ᴰ C)
+_∘ᴰ_ {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) = f' ∧ F' st cond'
     where 
-        open DialSet A using (U ; X; α)
-        open DialSet B hiding (α) renaming (U to V ; X to Y)
+        open DialSet A 
+        open DialSet B renaming (U to V ; X to Y; α to β)
         open DialSet C renaming (U to W ; X to Z; α to γ)
 
         f' : U → W 
@@ -85,14 +92,19 @@ _∘ᴰ_ {A} {B} {C} (f₂ ∧ F₂ st cond-on-f&F₂) (f₁ ∧ F₁ st cond-on
 
         F' : U → Z → X
         F' u z = let 
-                    v = f₁ u
-                    y = F₂ v z 
-                    x = F₁ u y
-                    in 
-                    x
+                 v = f₁ u
+                 y = F₂ v z 
+                 x = F₁ u y
+                 in x
 
-        cond : (u : U)(z : Z) → α u (F' u z) ≤² γ (f' u) z
-        cond u z = {!   !}
+        cond' : (u : U)(z : Z) → α u (F' u z) ≤² γ (f' u) z
+        cond' u z = let 
+                    v = f₁ u
+                    y = F₂ v z
+                    r1 = cond₁ u y       -- : α u (F₁ u (F₂ (f₁ u) z)) ≤² β (f₁ u) (F₂ (f₁ u) z)
+                    r2 = cond₂ v z       -- : β (f₁ u) (F₂ (f₁ u) z) ≤² γ (f₂ (f₁ u)) z
+                    in ≤-trans r1 r2
+
 
 
 
