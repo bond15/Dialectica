@@ -144,7 +144,7 @@ DialSetCat .idl     = cong-dial refl refl
 DialSetCat .assoc   = cong-dial refl refl
 
 
-
-Monoids and Comonoids in DialSet
+-- Structure of DialSet
+-- Monoids and Comonoids in DialSet
 
 
