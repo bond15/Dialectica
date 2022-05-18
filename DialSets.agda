@@ -5,8 +5,6 @@ open import Agda.Builtin.Sigma
 open import Data.Product
 open import Function using (_∘_)
 open import Data.Sum.Base using (_⊎_; inj₁ ; inj₂)
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; trans; sym; cong; cong₂ ; cong-app; subst)
 -- need to import less or equal \leq too?
 
 data Two : Set where ⊤ ⊥ : Two
@@ -21,16 +19,25 @@ _⊗²_ : Two → Two → Two
 ⊥ ⊗² ⊤ = ⊥
 ⊥ ⊗² ⊥ = ⊥
 
+-- modeling ⊥ → ⊤ category
 _≤²_ : Two → Two → Set 
 ⊤ ≤² ⊤ = Unit
 ⊤ ≤² ⊥ = Empty
-⊥ ≤² ⊤ = Empty
-⊥ ≤² ⊥ = Empty
+⊥ ≤² ⊤ = Unit
+⊥ ≤² ⊥ = Unit 
+
+≤-refl : {x : Two} → x ≤² x 
+≤-refl {⊤} = tt
+≤-refl {⊥} = tt
 
 ≤-trans : {x y z : Two} → x ≤² y → y ≤² z → x ≤² z 
-≤-trans {⊤} {⊤} {⊤} tt tt = tt
+≤-trans {⊤} {⊤} {⊤} _ _ = tt
 ≤-trans {⊤} {⊤} {⊥} _ ()
-≤-trans {⊤} {⊥} {_} () _
+≤-trans {⊤} {⊥} {z} () _ 
+≤-trans {⊥} {⊤} {⊤} _ _ = tt
+≤-trans {⊥} {⊤} {⊥} _ ()
+≤-trans {⊥} {⊥} {⊤} _ _ = tt
+≤-trans {⊥} {⊥} {⊥} _ _ = tt
 
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
@@ -67,7 +74,7 @@ record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where
         F : U → Y → X 
         cond-on-f&F : (u : U)(y : Y) → α u (F u y) ≤² β (f u) y
 
-_⇒ᴰ_ : DialSet → DialSet → Set
+_⇒ᴰ_ : {o : Level} → DialSet {o} → DialSet {o} → Set o
 _⇒ᴰ_ = DialSetMap
 
 {-
@@ -80,8 +87,8 @@ A := (U, X, α)
 B := (V, Y, β)
 C := (W, Z, γ)
 -}
-_∘ᴰ_ :{A B C : DialSet} → (B ⇒ᴰ C) → (A ⇒ᴰ B) → (A ⇒ᴰ C)
-_∘ᴰ_ {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) = f' ∧ F' st cond'
+_∘ᴰ_ : {o : Level}{A B C : DialSet {o}} → (B ⇒ᴰ C) → (A ⇒ᴰ B) → (A ⇒ᴰ C)
+_∘ᴰ_ {o} {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) = f' ∧ F' st cond'
     where 
         open DialSet A 
         open DialSet B renaming (U to V ; X to Y; α to β)
@@ -105,7 +112,55 @@ _∘ᴰ_ {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) = f' 
                     r2 = cond₂ v z       -- : β (f₁ u) (F₂ (f₁ u) z) ≤² γ (f₂ (f₁ u)) z
                     in ≤-trans r1 r2
 
+open import CatLib using (PreCat)
+open PreCat renaming (_∘_ to _∘ᶜ_)
+open import Cubical.Core.Everything using (_≡_; PathP)
+open import Cubical.Foundations.Prelude using (cong; cong₂;refl; transport)
 
+module _ {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where 
+    open DialSet A 
+    open DialSet B renaming (U to V ; X to Y; α to β)
+
+    open DialSetMap m₁ renaming (cond-on-f&F to cond)
+    open DialSetMap m₂ renaming (f to f' ; F to F'; cond-on-f&F to cond')
+    
+
+    funext : {o : Level}{A B : Set o}{f g : A → B} → (∀ (a : A) → f a ≡ g a) → f ≡ g 
+    funext p i x = p x i
+
+    funext₂ : {o : Level}{A B C : Set o}{f g : A → B → C} → (∀ (a : A)(b : B) → f a b ≡ g a b) → f ≡ g 
+    funext₂ p i x y = p x y i
+
+    dfunext₂ : {o : Level}{A : Set o}{B : A → Set o}{C : (a : A) → B a → Set o} {f g : (a : A) → (b : B a)  → C a b} → (∀ (a : A)(b : B a) → f a b ≡ g a b) → f ≡ g 
+    dfunext₂ p i x y = p x y i
+
+    dfunext₂op : {o : Level}{A : Set o}{B : A → Set o}{C : (a : A) → B a → Set o} {f g : (a : A) → (b : B a)  → C a b} → f ≡ g → (∀ (a : A)(b : B a) → f a b ≡ g a b) 
+    dfunext₂op  = {!   !}
+
+    cond-≤ : {l l' r r' : Two} → (p : l ≡ l') → (q : r ≡ r') → l ≤² r ≡ l' ≤² r' 
+    cond-≤ p q = cong₂ _≤²_  p q
+
+    huh : (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (F u y) ≤² β (f u) y ≡ α u (F' u y) ≤² β (f' u) y
+    huh p q u y = cond-≤ (cong₂ α refl λ i → q i u y)(cong₂ β (λ i → p i u) refl)
+    
+    eq-cond : (p : f ≡ f') → (q : F ≡ F') → 
+        (((u : U) → (y : Y) → α u (F u y) ≤² β (f u) y)) ≡ (((u : U) → (y : Y) → α u (F' u y) ≤² β (f' u) y))
+    eq-cond p q  = λ i → {! huh p q _ _    !}
+
+    cong-dial : f ≡ f' → F ≡ F' → m₁ ≡ m₂
+    cong-dial p q = {!   !} --  λ i → p i ∧ q i st {! eq-cond p q  !}
+
+
+
+DialSetCat : {o : Level} → PreCat (lsuc o) (o) 
+DialSetCat .Ob      = DialSet 
+DialSetCat ._⇒_     = DialSetMap
+DialSetCat .Hom-set = {!   !}
+DialSetCat .id      = (λ u → u) ∧ (λ u x → x) st (λ u x → ≤-refl)
+DialSetCat ._∘ᶜ_    = _∘ᴰ_
+DialSetCat .idr {A} {B} m@{f ∧ F st cond} = cong-dial refl refl 
+DialSetCat .idl = {!   !}
+DialSetCat .assoc = {!   !}
 
 
 -- need a monoidal operation to combine elements of Two
@@ -267,4 +322,4 @@ yoneda =  record { to = λ{ record { onPos = onPos ; onDir = onDir } → onPos u
    
 
 
--}
+-}  
