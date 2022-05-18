@@ -1,11 +1,9 @@
 module DialSets where 
-
 open import Level renaming (zero to lzero; suc to lsuc)
 open import Agda.Builtin.Sigma 
 open import Data.Product
 open import Function using (_∘_)
 open import Data.Sum.Base using (_⊎_; inj₁ ; inj₂)
--- need to import less or equal \leq too?
 
 data Two : Set where ⊤ ⊥ : Two
 
@@ -39,6 +37,7 @@ _≤²_ : Two → Two → Set
 ≤-trans {⊥} {⊥} {⊤} _ _ = tt
 ≤-trans {⊥} {⊥} {⊥} _ _ = tt
 
+-- Objects
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
     field
@@ -46,23 +45,7 @@ record DialSet {ℓ : Level} : Set (lsuc ℓ) where
         X : Set ℓ
         α : U → X → Two  
 
--- open DialSet
--- what this opening statement?
-{-
-    DialSet is a record. In Agda, Records also have Modules (Cs module not math module)
-        see https://agda.readthedocs.io/en/v2.6.2.1/language/record-types.html#record-modules for details
-
-    So there is a module DialSet and "open"ing that module causes the definitions 'U', 'X', and 'alpha' to be in scope
-
-    Here I have commented it out and opted to only open DialSet locally seen in the definition of DialSetMap
--}
-
-
--- variables for objects of DialSet: a, b, c
--- objects are triples a= (U; X; alpha) U,X sets, alpha:U x X ->2 a function
--- maps from a to b= (V; Y; beta) are pairs of functions (f,F) f:U -> V, F:U x Y -> X such that
--- ∀ (u : U)∀ (y : Y) (u alpha F(u,y) \leq (fu beta y)
-
+-- morphisms
 record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where 
     constructor _∧_st_
     open DialSet A 
@@ -74,6 +57,7 @@ record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where
         F : U → Y → X 
         cond-on-f&F : (u : U)(y : Y) → α u (F u y) ≤² β (f u) y
 
+-- syntax for morphism
 _⇒ᴰ_ : {o : Level} → DialSet {o} → DialSet {o} → Set o
 _⇒ᴰ_ = DialSetMap
 
@@ -83,6 +67,7 @@ _⇒ᴰ_ = DialSetMap
 -}
 
 {- 
+composition of morphisms 
 A := (U, X, α)
 B := (V, Y, β)
 C := (W, Z, γ)
@@ -117,14 +102,14 @@ open PreCat renaming (_∘_ to _∘ᶜ_)
 open import Cubical.Core.Everything using (_≡_; PathP)
 open import Cubical.Foundations.Prelude using (cong; cong₂;refl; transport)
 
-module _ {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where 
+-- defining equality of DialSet morphisms
+module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where 
     open DialSet A 
     open DialSet B renaming (U to V ; X to Y; α to β)
 
     open DialSetMap m₁ renaming (cond-on-f&F to cond)
     open DialSetMap m₂ renaming (f to f' ; F to F'; cond-on-f&F to cond')
     
-
     funext : {o : Level}{A B : Set o}{f g : A → B} → (∀ (a : A) → f a ≡ g a) → f ≡ g 
     funext p i x = p x i
 
@@ -134,33 +119,29 @@ module _ {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where
     dfunext₂ : {o : Level}{A : Set o}{B : A → Set o}{C : (a : A) → B a → Set o} {f g : (a : A) → (b : B a)  → C a b} → (∀ (a : A)(b : B a) → f a b ≡ g a b) → f ≡ g 
     dfunext₂ p i x y = p x y i
 
-    dfunext₂op : {o : Level}{A : Set o}{B : A → Set o}{C : (a : A) → B a → Set o} {f g : (a : A) → (b : B a)  → C a b} → f ≡ g → (∀ (a : A)(b : B a) → f a b ≡ g a b) 
-    dfunext₂op  = {!   !}
-
-    cond-≤ : {l l' r r' : Two} → (p : l ≡ l') → (q : r ≡ r') → l ≤² r ≡ l' ≤² r' 
-    cond-≤ p q = cong₂ _≤²_  p q
-
-    huh : (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (F u y) ≤² β (f u) y ≡ α u (F' u y) ≤² β (f' u) y
-    huh p q u y = cond-≤ (cong₂ α refl λ i → q i u y)(cong₂ β (λ i → p i u) refl)
-    
-    eq-cond : (p : f ≡ f') → (q : F ≡ F') → 
-        (((u : U) → (y : Y) → α u (F u y) ≤² β (f u) y)) ≡ (((u : U) → (y : Y) → α u (F' u y) ≤² β (f' u) y))
-    eq-cond p q  = λ i → {! huh p q _ _    !}
+    eq-maps-cond : (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (F u y) ≤² β (f u) y ≡ α u (F' u y) ≤² β (f' u) y
+    eq-maps-cond p q u y = cong₂ _≤²_ (cong₂ α refl (λ i → q i u y))(cong₂ β (λ i → p i u) refl)
 
     cong-dial : f ≡ f' → F ≡ F' → m₁ ≡ m₂
     cong-dial p q = {!   !} --  λ i → p i ∧ q i st {! eq-cond p q  !}
 
+open DialSet-eq-maps using (cong-dial)
 
-
+-- Show DialSet is a category
 DialSetCat : {o : Level} → PreCat (lsuc o) (o) 
 DialSetCat .Ob      = DialSet 
 DialSetCat ._⇒_     = DialSetMap
 DialSetCat .Hom-set = {!   !}
 DialSetCat .id      = (λ u → u) ∧ (λ u x → x) st (λ u x → ≤-refl)
 DialSetCat ._∘ᶜ_    = _∘ᴰ_
-DialSetCat .idr {A} {B} m@{f ∧ F st cond} = cong-dial refl refl 
-DialSetCat .idl = {!   !}
-DialSetCat .assoc = {!   !}
+DialSetCat .idr     = cong-dial refl refl 
+DialSetCat .idl     = cong-dial refl refl
+DialSetCat .assoc   = cong-dial refl refl
+
+
+---------------------------- Ignore following for now ---------------------------------------
+
+
 
 
 -- need a monoidal operation to combine elements of Two
