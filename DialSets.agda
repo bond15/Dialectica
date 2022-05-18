@@ -64,8 +64,7 @@ _⇒ᴰ_ = DialSetMap
 
 {-
     show DialSet is category
-    show DialSet is symmetric monoidal closed
-    define tensor, define interna-hom, show adjunction above
+  
 -}
 
 {- 
@@ -144,7 +143,8 @@ DialSetCat .idl     = cong-dial refl refl
 DialSetCat .assoc   = cong-dial refl refl
 
 
--- Structure of DialSet
+--  goal: show DialSet is symmetric monoidal closed
+--  Structure of DialSet:  define tensor, define interna-hom, show adjunction above
 -- Monoids and Comonoids in DialSet
 
 
