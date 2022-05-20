@@ -158,41 +158,43 @@ Define monoidal tensors in Dial Set
 -- DialSet notation (U×V, X+Y, choose (alpha, beta))
 
 _×_ : DialSet → DialSet → DialSet
-A × B = record { U × V; X + Y ; λ {(i , 0) → X |
-                                    (j,1) → Y  } }
+A × B = record { U × V; X + Y ; λ {(x,0) → u alpha x |
+                                   (y,1) → v beta y } }
                                     
--- must show _×_ is a bifunctor,  so (f,F):A → C, (g,G):B → C, then A×B → C×D or
---
+-- must show _×_ is a bifunctor,  so if (f,F):A → C, and (g,G):B → C, then A×B → C×D 
+-- must show T = (1, 0, empty) is the unit for this cartesian product, 1×0 → Two has to be the empty relation
+-- must show A×T=T×A=A
 
 
 
-
---tensor \ox
+--tensor \otimes: parallel or Dirichlet
 -- Ayᴮ × Cyᴰ = ACyᴮᴰ
-_⊗ₚ_ : Poly → Poly → Poly
-p ⊗ₚ q = record { pos = pos p × pos q ; dir = λ {(i , j) → (dir p) i × (dir q) j} }
--- show these are all monoidal structures on poly
 
--- composition of polynomials
--- notation suggests that p ◃ q, means that q is substituted into p
--- show that this is an example of composition of datatypes!
+_⊗_ : DialSet → DialSet → DialSet
+A ⊗ B = record {  U × V; X × Y; λ (u,v,x,y) → (u alpha x)⊗² (v beta y)   }
 
-_◃_ : Poly → Poly → Poly
+
+
+--------------
+
+_◃_ : DialSet → DialSet → DialSet
 (p⑴ ▹ p[_] ) ◃ (q⑴ ▹ q[_]) = (Σ[ i ∈ p⑴ ] (p[ i ] → q⑴)) ▹ λ{ ( i , ĵ) → Σ[ d ∈ p[ i ] ]  q[ (ĵ d) ]}
 
 
-record Polyₓ (p q : Poly) : Set where
+record Polyₓ (p q : DialSet) : Set where
     field
         posₓ : pos p × pos q
         dirₓ : (pq : pos p × pos q) → (dir p) (fst pq) ⊎ (dir q) (snd pq) 
 
 
-record Poly[_,_](p q : Poly) : Set where
-    constructor _⇒ₚ_
+record Poly[_,_](A B : DialSet) : Set where
+    constructor _⇒_
     field
         onPos : pos p → pos q
         onDir : (i : pos p) → dir q (onPos i) → dir p i
 open Poly[_,_]
+
+
 -- Monoids and Comonoids in DialSet
 
 
