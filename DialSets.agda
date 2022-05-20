@@ -150,7 +150,7 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
  
 
     cong-dial : f ≡ f' → F ≡ F' → m₁ ≡ m₂
-    cong-dial p q = λ i → p i ∧ q i st λ u y → eq-cond p q i u y
+    cong-dial p q = λ i → p i ∧ q i st eq-cond p q i
     -- asdf p q i u y
     --λ u y → huh p q i u y
 
