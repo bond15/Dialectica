@@ -63,8 +63,7 @@ _⇒ᴰ_ : {o : Level} → DialSet {o} → DialSet {o} → Set o
 _⇒ᴰ_ = DialSetMap
 
 {-
-    show DialSet is category
-  
+    show DialSet is category  
 -}
 
 {- 
@@ -98,7 +97,7 @@ _∘ᴰ_ {o} {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) =
                     r2 = cond₂ v z       -- : β (f₁ u) (F₂ (f₁ u) z) ≤² γ (f₂ (f₁ u)) z
                     in ≤-trans r1 r2
                     
- -- lines 77-100 define the composition of morphisms                   
+ -- lines 76-100 define the composition of morphisms                   
 
 open import CatLib using (PreCat)
 open PreCat renaming (_∘_ to _∘ᶜ_)
@@ -106,7 +105,9 @@ open import Cubical.Core.Everything using (_≡_; PathP)
 open import Cubical.Foundations.Prelude using (cong; cong₂;refl; transport)
 
 -- defining equality of DialSet morphisms
--- (f,F, cond)=(g,G, cond') iff f=g and F=G and cond=cond' I expect
+
+-- (f,F, cond)=(g,G, cond') iff f=g and F=G and cond=cond' vcvp expects
+
 module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where 
     open DialSet A 
     open DialSet B renaming (U to V ; X to Y; α to β)
@@ -143,8 +144,55 @@ DialSetCat .idl     = cong-dial refl refl
 DialSetCat .assoc   = cong-dial refl refl
 
 
---  goal: show DialSet is symmetric monoidal closed
---  Structure of DialSet:  define tensor, define interna-hom, show adjunction above
+--  Next goal: show DialSet is symmetric monoidal closed
+
+--  Need to describe the structure of DialSet:  define tensor, define interna-hom, show adjunction above
+
+
+{- 
+Define monoidal tensors in Dial Set
+-}
+
+-- cartesian product
+-- Poly notation: Ayᴮ × Cyᴰ = ACyᴮ⁺ᴰ
+-- DialSet notation (U×V, X+Y, choose (alpha, beta))
+
+_×_ : DialSet → DialSet → DialSet
+A × B = record { U × V; X + Y ; λ {(i , 0) → X |
+                                    (j,1) → Y  } }
+                                    
+-- must show _×_ is a bifunctor,  so (f,F):A → C, (g,G):B → C, then A×B → C×D or
+--
+
+
+
+
+--tensor \ox
+-- Ayᴮ × Cyᴰ = ACyᴮᴰ
+_⊗ₚ_ : Poly → Poly → Poly
+p ⊗ₚ q = record { pos = pos p × pos q ; dir = λ {(i , j) → (dir p) i × (dir q) j} }
+-- show these are all monoidal structures on poly
+
+-- composition of polynomials
+-- notation suggests that p ◃ q, means that q is substituted into p
+-- show that this is an example of composition of datatypes!
+
+_◃_ : Poly → Poly → Poly
+(p⑴ ▹ p[_] ) ◃ (q⑴ ▹ q[_]) = (Σ[ i ∈ p⑴ ] (p[ i ] → q⑴)) ▹ λ{ ( i , ĵ) → Σ[ d ∈ p[ i ] ]  q[ (ĵ d) ]}
+
+
+record Polyₓ (p q : Poly) : Set where
+    field
+        posₓ : pos p × pos q
+        dirₓ : (pq : pos p × pos q) → (dir p) (fst pq) ⊎ (dir q) (snd pq) 
+
+
+record Poly[_,_](p q : Poly) : Set where
+    constructor _⇒ₚ_
+    field
+        onPos : pos p → pos q
+        onDir : (i : pos p) → dir q (onPos i) → dir p i
+open Poly[_,_]
 -- Monoids and Comonoids in DialSet
 
 
