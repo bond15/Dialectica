@@ -61,6 +61,9 @@ record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where
 _⇒ᴰ_ : {o : Level} → DialSet {o} → DialSet {o} → Set o
 _⇒ᴰ_ = DialSetMap
 
+id-dial : {o : Level} {A : DialSet {o}} → A ⇒ᴰ A 
+id-dial = (λ u → u) ∧ (λ u x → x) st λ u x → ≤-refl
+
 {-
     show DialSets is category
     ! is an endofunctor on DialSets
@@ -97,9 +100,11 @@ _∘ᴰ_ {o} {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) =
                     r2 = cond₂ v z       -- : β (f₁ u) (F₂ (f₁ u) z) ≤² γ (f₂ (f₁ u)) z
                     in ≤-trans r1 r2
 
+
+
 open import CatLib using (PreCat)
 open PreCat renaming (_∘_ to _∘ᶜ_)
-open import Cubical.Core.Everything using (_≡_; PathP)
+open import Cubical.Core.Everything using (_≡_; PathP;Path; I ; i0 ; i1 ; hcomp)
 open import Cubical.Foundations.Prelude using (cong; cong₂;refl; transport)
 
 -- defining equality of DialSet morphisms
@@ -111,7 +116,7 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     open DialSetMap m₂ renaming (f to f' ; F to F'; cond-on-f&F to cond')
     
     funext : {o : Level}{A B : Set o}{f g : A → B} → (∀ (a : A) → f a ≡ g a) → f ≡ g 
-    funext p i x = p x i
+    funext p i a = p a i
 
     funext₂ : {o : Level}{A B C : Set o}{f g : A → B → C} → (∀ (a : A)(b : B) → f a b ≡ g a b) → f ≡ g 
     funext₂ p i x y = p x y i
@@ -119,11 +124,39 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     dfunext₂ : {o : Level}{A : Set o}{B : A → Set o}{C : (a : A) → B a → Set o} {f g : (a : A) → (b : B a)  → C a b} → (∀ (a : A)(b : B a) → f a b ≡ g a b) → f ≡ g 
     dfunext₂ p i x y = p x y i
 
-    eq-maps-cond : (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (F u y) ≤² β (f u) y ≡ α u (F' u y) ≤² β (f' u) y
-    eq-maps-cond p q u y = cong₂ _≤²_ (cong₂ α refl (λ i → q i u y))(cong₂ β (λ i → p i u) refl)
+    eq-maps-cond : (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (q i0 u y) ≤² β (p i0 u) y ≡ α u (q i1 u y) ≤² β (p i1 u) y
+    eq-maps-cond  p q u y = cong₂ _≤²_ (cong₂ α refl (λ i → q i u y))(cong₂ β (λ i → p i u) refl)
+
+    eq-maps-cond' : (i : I) → (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (q i u y) ≤² β (p i u) y 
+    eq-maps-cond' i p q u y = {!   !}
+
+    eq-cond : (p : f ≡ f') → (q : F ≡ F') → 
+        PathP (λ i → (u : U)(y : Y) → α u ((q i) u y) ≤² β ((p i) u) y) cond cond'
+    eq-cond p q = {!   !}
+
+    -- λ i u y → eq-maps-cond' i p q u y --λ i u y → {!  eq-maps-cond p q  u y  !}
+    -- λ i u y → {! eq-maps-cond p q u y  !}
+    
+{-
+    test : {ℓ : Level}{A B : Set ℓ}{g g' : A → B → Set}{p : g ≡ g'}{f  : (a : A)(b : B) → g a b}
+        {f' : (a : A)(b : B) → g' a b} → PathP (λ i → (a : A)(b : B) → p i a b) f f'
+    test = λ i a b → {!   !}
+
+-}
+  --  huh : (p : f ≡ f') → (q : F ≡ F') → PathP (λ i → (u : U)(y : Y) → eq-maps-cond p q u y i) cond cond'
+   -- huh p q = λ i u y → {!   !}
+    --λ i u y → {!  !}
+
+ 
 
     cong-dial : f ≡ f' → F ≡ F' → m₁ ≡ m₂
-    cong-dial p q = {!   !} --  λ i → p i ∧ q i st {! eq-cond p q  !}
+    cong-dial p q = λ i → p i ∧ q i st λ u y → eq-cond p q i u y
+    -- asdf p q i u y
+    --λ u y → huh p q i u y
+
+
+    -- transport {! eq-maps-cond p q u y  !} (cond u y)
+    -- {! transport (eq-maps-cond p q  u y) ? !}
 
 open DialSet-eq-maps using (cong-dial)
 
@@ -131,10 +164,9 @@ open DialSet-eq-maps using (cong-dial)
 DialSetCat : {o : Level} → PreCat (lsuc o) (o) 
 DialSetCat .Ob      = DialSet 
 DialSetCat ._⇒_     = DialSetMap
-DialSetCat .Hom-set = {!   !}
-DialSetCat .id      = (λ u → u) ∧ (λ u x → x) st (λ u x → ≤-refl)
+DialSetCat .id      = id-dial
 DialSetCat ._∘ᶜ_    = _∘ᴰ_
-DialSetCat .idr     = cong-dial refl refl 
+DialSetCat .idr     = cong-dial refl refl
 DialSetCat .idl     = cong-dial refl refl
 DialSetCat .assoc   = cong-dial refl refl
 

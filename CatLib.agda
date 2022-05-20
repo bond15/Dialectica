@@ -29,7 +29,7 @@ module CatLib where
         field 
             Ob : Set o
             _⇒_ : Ob → Ob → Set h
-            Hom-set : (x y : Ob) → is-set (x ⇒ y) -- if p : x ≡ y, q : x ≡ y, then p ≡ q
+           -- Hom-set : (x y : Ob) → is-set (x ⇒ y) -- if p : x ≡ y, q : x ≡ y, then p ≡ q
             id : ∀ {x} → x ⇒ x
             -- how to ensure this behaves correctly?
             --_≣_ : ∀{A B}→ (f g : A ⇒ B) → Set h
