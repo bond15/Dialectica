@@ -1,4 +1,4 @@
--- recopying Eric's file
+-- modifying Eric's file
 module DialSets where 
 open import Level renaming (zero to lzero; suc to lsuc)
 open import Agda.Builtin.Sigma 
@@ -42,21 +42,21 @@ _≤²_ : Two → Two → Set
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
     field
-        U : Set ℓ 
-        X : Set ℓ
-        α : U → X → Two  
+        pos A : Set ℓ 
+        dir A : Set ℓ
+        α : pos A → dir A → Two  
 
 -- Morphisms
 record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where 
     constructor _∧_st_
     open DialSet A 
-    open DialSet B renaming (U to V ; X to Y ; α to β )
-    -- ^ this brings U X α of object A := (U, X, α) in scope
-    -- it also brings V Y β of object B := (V, Y, β) in scope
+    open DialSet B renaming (pos A to pos B ; dir A to dir B ; α to β )
+    -- ^ this brings pos A dir A α of object A := (pos A, dir A, α) in scope
+    -- it also brings pos B dir B β of object B := (pos B, dir B, β) in scope
     field 
-        f : U → V
-        F : U → Y → X 
-        cond-on-f&F : (u : U)(y : Y) → α u (F u y) ≤² β (f u) y
+        f : pos A → pos B
+        F : pos A → dir B → dir A 
+        cond-on-f&F : (u : pos A)(y : dir B) → α u (F u y) ≤² β (f u) y
 
 -- syntax for morphism
 _⇒ᴰ_ : {o : Level} → DialSet {o} → DialSet {o} → Set o
@@ -68,9 +68,9 @@ _⇒ᴰ_ = DialSetMap
 
 {- 
 composition of morphisms 
-A := (U, X, α)
-B := (V, Y, β)
-C := (W, Z, γ)
+A := (pos A, dir A, α)
+B := (pos B, dir B, β)
+C := (pos C, dir C, γ)
 -}
 _∘ᴰ_ : {o : Level}{A B C : DialSet {o}} → (B ⇒ᴰ C) → (A ⇒ᴰ B) → (A ⇒ᴰ C)
 _∘ᴰ_ {o} {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) = f' ∧ F' st cond'
@@ -187,12 +187,12 @@ record Polyₓ (p q : DialSet) : Set where
         dirₓ : (pq : pos p × pos q) → (dir p) (fst pq) ⊎ (dir q) (snd pq) 
 
 
-record Poly[_,_](A B : DialSet) : Set where
+record DialSet[_,_](A B : DialSet) : Set where
     constructor _⇒_
     field
-        onPos : pos p → pos q
-        onDir : (i : pos p) → dir q (onPos i) → dir p i
-open Poly[_,_]
+        onPos : (pos A → pos B) × (pos A\times dir B → Dir A)
+        onDir : pos A × dir B
+open DialSet[_,_]
 
 
 -- Monoids and Comonoids in DialSet
