@@ -205,3 +205,38 @@ module CatLib where
 
             pullback : ∀{X Y Z : Ob} → (f : X ⇒ Z) → (g : Y ⇒ Z) → PullbackT f g  
             pullback f g = Product×Equalizer⇒Pullback (BinaryProductsT.product (CartesianT.products cartesian)) (equalizer _ _)
+
+    module Functor {o ℓ}(𝒞 𝒟 : PreCat o ℓ) where
+        open import Level using (levelOfTerm)
+
+        open PreCat 𝒞 renaming (Ob to Obᶜ; _⇒_ to _⇒ᶜ_; id to idᶜ; _∘_ to _∘ᶜ_)
+        open PreCat 𝒟 renaming (Ob to Obᵈ; _⇒_ to _⇒ᵈ_; id to idᵈ; _∘_ to _∘ᵈ_)
+
+        record FunctorT : Set (levelOfTerm 𝒞) where 
+            field
+                F₀ : Obᶜ → Obᵈ
+                F₁ : {A B : Obᶜ} → (f : A ⇒ᶜ B) → F₀ A ⇒ᵈ F₀ B
+
+                Fid : {A : Obᶜ} → F₁ (idᶜ {A}) ≡ idᵈ { F₀ A }
+                Fcomp : {A B C : Obᶜ}{f : A ⇒ᶜ B}{g : B ⇒ᶜ C} → F₁ (g ∘ᶜ f) ≡ (F₁ g ∘ᵈ F₁ f)
+
+
+    -- covariant in both args
+    module BiFunctor {o ℓ}(𝒞 𝒟 ℬ : PreCat o ℓ) where
+        open import Level using (levelOfTerm)
+
+        open PreCat ℬ renaming (Ob to Obᵇ; _⇒_ to _⇒ᵇ_; id to idᵇ; _∘_ to _∘ᵇ_)
+        open PreCat 𝒞 renaming (Ob to Obᶜ; _⇒_ to _⇒ᶜ_; id to idᶜ; _∘_ to _∘ᶜ_)
+        open PreCat 𝒟 renaming (Ob to Obᵈ; _⇒_ to _⇒ᵈ_; id to idᵈ; _∘_ to _∘ᵈ_)
+
+        record BiFunctorT : Set (levelOfTerm 𝒞) where 
+            field
+                F₀ : Obᵇ → Obᶜ → Obᵈ
+                F₁ : {A A' : Obᵇ}{B B' : Obᶜ} → (f : A ⇒ᵇ A')(g : B ⇒ᶜ B') → F₀ A B ⇒ᵈ F₀ A' B'
+
+                Fid : {A : Obᵇ}{B : Obᶜ} → F₁ (idᵇ {A}) (idᶜ {B}) ≡ idᵈ { F₀ A B }
+                Fcomp : {A B C : Obᵇ}{f  : A ⇒ᵇ B}{g  : B ⇒ᵇ C}
+                        {X Y Z : Obᶜ}{f' : X ⇒ᶜ Y}{g' : Y ⇒ᶜ Z}
+                 → F₁ (g ∘ᵇ f) (g' ∘ᶜ f') ≡ (F₁ g  g' ∘ᵈ F₁ f f')
+
+    

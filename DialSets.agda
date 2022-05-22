@@ -193,6 +193,12 @@ DialSetCat .assoc   = eq-dial-maps refl refl
 -}
 
 
+_⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ} 
+⟨ U , X , α ⟩ ⊗ᴰ ⟨ V , Y , β ⟩ = ⟨ U × V , X × Y , m ⟩ 
+    where m : U × V  → X × Y → Two
+          m (u , v) (x , y) =  α u x ⊗² β v y 
+
+
 ---------------------------- Ignore following for now ---------------------------------------
 
 
@@ -213,11 +219,6 @@ _⊗ᴰ_ : DialSet → DialSet → DialSet
 -- tensor \ox
 -- Ayᴮ × Cyᴰ = ACyᴮᴰ
 
-
-_⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ} 
-⟨ U , X , α ⟩ ⊗ᴰ ⟨ V , Y , β ⟩ = ⟨ U × V , X × Y , m ⟩ 
-    where m : U × V  → X × Y → Two
-          m (u , v) (x , y) =  α u x ⊗² β v y 
 
 --product \&
 -- Ayᴮ × Cyᴰ = ACyᴮ⁺ᴰ
