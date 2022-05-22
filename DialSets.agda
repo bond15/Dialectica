@@ -261,6 +261,25 @@ module TensorBiFunctor {ℓ : Level} where
     tensor .Fid   = eq-dial-maps refl refl
     tensor .Fcomp = eq-dial-maps refl refl
 
+
+module Mon {ℓ : Level} where 
+    open DialCat using (DialSetCat)
+    open import CatLib using (PreCat)
+    open PreCat (DialSetCat {ℓ})
+
+    open TensorBiFunctor using (tensor)
+
+    open CatLib.Monoidal (DialSetCat {ℓ}) using (MonoidalT)
+    open MonoidalT
+
+    DialCatMonoidal : MonoidalT
+    DialCatMonoidal .⊗ = {!   !}
+    DialCatMonoidal .unit = {!   !}
+    DialCatMonoidal .unitorˡ = {!   !}    
+    DialCatMonoidal .unitorʳ = {!   !}
+    DialCatMonoidal .associator = {!   !}
+    DialCatMonoidal .pentagon = {!   !}
+
 ---------------------------- Ignore following for now ---------------------------------------
 
 

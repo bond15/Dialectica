@@ -313,14 +313,9 @@ module CatLib where
                 α⇐ {X}{Y}{Z} = associator {X} {Y} {Z} .to
             field
                 pentagon : { X Y Z W : Ob } → [ (((X ⊗₀ Y) ⊗₀ Z) ⊗₀ W) ⇒ (X ⊗₀ Y ⊗₀ Z ⊗₀ W) ]⟨
-                                                {!   !} ≡ {!   !} ⟩
-
-                {- 
-                [ ((X ⊗₀ Y) ⊗₀ Z) ⊗₀ W ⇒ X ⊗₀ Y ⊗₀ Z ⊗₀ W ]⟨
-                          α⇒ ⊗₁ C.id       ⇒⟨ (X ⊗₀ Y ⊗₀ Z) ⊗₀ W ⟩
-                          α⇒               ⇒⟨ X ⊗₀ (Y ⊗₀ Z) ⊗₀ W ⟩
-                          C.id ⊗₁ α⇒
-                        ≈ α⇒               ⇒⟨ (X ⊗₀ Y) ⊗₀ Z ⊗₀ W ⟩
-                          α⇒
-                        ⟩
-                -}
+                                                    α⇒ ⊗₁ id ⇒⟨ ((X ⊗₀ Y ⊗₀ Z) ⊗₀ W) ⟩ 
+                                                    α⇒       ⇒⟨ (X ⊗₀ (Y ⊗₀ Z) ⊗₀ W) ⟩ 
+                                                    id ⊗₁ α⇒ 
+                                                ≡ 
+                                                    α⇒ ⇒⟨ ((X ⊗₀ Y) ⊗₀ Z ⊗₀ W) ⟩ 
+                                                    α⇒ ⟩
