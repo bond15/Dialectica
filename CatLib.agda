@@ -239,4 +239,88 @@ module CatLib where
                         {X Y Z : Obᶜ}{f' : X ⇒ᶜ Y}{g' : Y ⇒ᶜ Z}
                  → F₁ (g ∘ᵇ f) (g' ∘ᶜ f') ≡ (F₁ g  g' ∘ᵈ F₁ f f')
 
-    
+    module Iso{o ℓ} (𝒞 : PreCat o ℓ) where 
+        open PreCat 𝒞
+
+        infix 4 _≅_
+        record _≅_ (A B : Ob) : Set (ℓ ⊔ o) where
+            field
+                from : A ⇒ B
+                to   : B ⇒ A
+                isoˡ : to ∘ from ≡ id
+                isoʳ : from ∘ to ≡ id
+
+
+    module Commutation {o ℓ}(𝓒 : PreCat o ℓ) where
+        open PreCat 𝓒
+
+        infix 1 [_⇒_]⟨_≡_⟩
+        [_⇒_]⟨_≡_⟩ : ∀ (A B : Ob) → A ⇒ B → A ⇒ B → Set _
+        [ A ⇒ B ]⟨ f ≡ g ⟩ = f ≡ g
+
+        infixl 2 connect
+        connect : ∀ {A C : Ob} (B : Ob) → A ⇒ B → B ⇒ C → A ⇒ C
+        connect B f g = g ∘ f
+
+        syntax connect B f g = f ⇒⟨ B ⟩ g
+        
+    module Monoidal {o ℓ}(𝒞 : PreCat o ℓ) where
+        open import Level using (levelOfTerm)
+        open BiFunctor using (BiFunctorT)
+        open Iso 𝒞 
+        open _≅_
+
+        open PreCat 𝒞
+        open Commutation 𝒞
+        
+        record MonoidalT : Set (levelOfTerm 𝒞) where 
+            field 
+                ⊗ : BiFunctorT 𝒞 𝒞 𝒞
+                unit : Ob
+                
+
+            open BiFunctorT ⊗ 
+            infixr 10 _⊗₀_ _⊗₁_ 
+
+            _⊗₀_ : Ob → Ob → Ob
+            _⊗₀_ = F₀
+
+            _⊗₁_ : {X Y Z W : Ob} → X ⇒ Y → Z ⇒ W → (X ⊗₀ Z) ⇒ (Y ⊗₀ W)
+            _⊗₁_ = F₁          
+
+            field 
+                unitorˡ : {X : Ob} → unit ⊗₀ X ≅ X
+                unitorʳ : {X : Ob} → X ⊗₀ unit ≅ X
+                associator : {X Y Z : Ob} → (X ⊗₀ Y) ⊗₀ Z ≅ X ⊗₀ (Y ⊗₀ Z)
+
+            private 
+                λ⇒ : {X : Ob} → (unit ⊗₀ X) ⇒ X
+                λ⇒ {X} = (unitorˡ {X}) .from  
+
+                λ⇐ : {X : Ob} →  X ⇒ (unit ⊗₀ X)
+                λ⇐ {X} = (unitorˡ {X}) .to
+
+                ρ⇒ : {X : Ob} → (X ⊗₀ unit) ⇒ X
+                ρ⇒ {X} = (unitorʳ {X}) .from  
+                 
+                ρ⇐ : {X : Ob} →  X ⇒ (X ⊗₀ unit)
+                ρ⇐ {X} = (unitorʳ {X}) .to
+
+                α⇒ : {X Y Z : Ob} → ((X ⊗₀ Y) ⊗₀ Z) ⇒ (X ⊗₀ (Y ⊗₀ Z))
+                α⇒ {X}{Y}{Z} = associator {X} {Y} {Z} .from
+
+                α⇐ : {X Y Z : Ob} → (X ⊗₀ (Y ⊗₀ Z)) ⇒ (((X ⊗₀ Y) ⊗₀ Z))
+                α⇐ {X}{Y}{Z} = associator {X} {Y} {Z} .to
+            field
+                pentagon : { X Y Z W : Ob } → [ (((X ⊗₀ Y) ⊗₀ Z) ⊗₀ W) ⇒ (X ⊗₀ Y ⊗₀ Z ⊗₀ W) ]⟨
+                                                {!   !} ≡ {!   !} ⟩
+
+                {- 
+                [ ((X ⊗₀ Y) ⊗₀ Z) ⊗₀ W ⇒ X ⊗₀ Y ⊗₀ Z ⊗₀ W ]⟨
+                          α⇒ ⊗₁ C.id       ⇒⟨ (X ⊗₀ Y ⊗₀ Z) ⊗₀ W ⟩
+                          α⇒               ⇒⟨ X ⊗₀ (Y ⊗₀ Z) ⊗₀ W ⟩
+                          C.id ⊗₁ α⇒
+                        ≈ α⇒               ⇒⟨ (X ⊗₀ Y) ⊗₀ Z ⊗₀ W ⟩
+                          α⇒
+                        ⟩
+                -}
