@@ -9,9 +9,8 @@ data Two : Set where ⊤ ⊥ : Two
 
 data Empty : Set where 
 
--- needs an eta law
-record Unit : Set where
-  instance constructor tt
+-- needs an eta law for transp in proof of eq-dial-maps
+record Unit : Set where instance constructor tt
 
 _⊗²_ : Two → Two → Two 
 ⊤ ⊗² ⊤ = ⊤
@@ -262,16 +261,6 @@ _[-,-]_ : DialSet → DialSet → DialSet
         r-unit : (a : A) → a ∙ e ≡ a
         assoc : (a b c : A) → (a ∙ b) ∙ c ≡ a ∙ (b ∙ c)
 -}
-
-
-
-
-
-
-
-
-
-     
 --⟨ U × V , X x Y , alpha x beta ⟩ 
 
 
@@ -292,70 +281,5 @@ _⅋_ : DialSet → DialSet → DialSet
 _×ₚ_ : DialSet → DialSet → DialSet
 a ×ₚ b = record { U × V ; X + Y; choose(alpha, beta) }
 -- want to choose a relation for a pair ((u,v), s), where s= (x, o) or (y, 1). if s=(x, 0) choose  alpha, otherwise choose beta
-
-
-record DialSet[_,_](a b : DialSet) : Set where
-    constructor _⇒ₚ_
-    field
-        onPos : pos p → pos q
-        onDir : (i : pos p) → dir q (onPos i) → dir p i
-open Dialset[_,_]
-
--- RENAME 
-_⇒∘ₚ_ : {p q r : Poly} → Poly[ p , q ] → Poly[ q , r ] → Poly[ p , r ]
-pq ⇒∘ₚ qr = record { onPos = (onPos pq) ؛ (onPos qr) -- forward composition on positions
-                  ; onDir = λ i → ((onDir pq) i) o ((onDir qr) ((onPos pq) i)) } -- backward composition on directions
-                  
-
--- Chart
--- forward on positions and forward on arrows
---https://www.youtube.com/watch?v=FU9B-H6Tb4w&list=PLhgq-BqyZ7i6IjU82EDzCqgERKjjIPlmh&index=9
--- found DJM's book! http://davidjaz.com/Papers/DynamicalBook.pdf
-record Chart (p q : Poly) : Set where
-    field
-        onPos : pos p → pos q
-        onDir : (i : pos p) → dir p i → dir q (onPos i)
-
--- write out the commuting square 
-
-Poly[] : Poly → Poly → Set
-Poly[] p q = ∀ (i : pos p) → Σ (pos q) (λ (j : pos q) → ∀ (d : dir q j) → Σ (dir p i) λ c → Unit )
-
-
-lemma-poly[]-iso : {p q : Poly} → Poly[] p q ≈ Poly[ p , q ]
-lemma-poly[]-iso {p} {q} = record { to = λ p[] → record { onPos = λ ppos → fst( p[] ppos) ; onDir = λ ppos x → fst(snd(p[] ppos) x) } 
-                        ; from = λ poly[p,q] ppos → (onPos poly[p,q]) ppos , λ d → (onDir poly[p,q]) ppos d , unit 
-                        ; from∘to = λ poly[]pq → Extensionality λ x → {! ? !}
-                        ; to∘from = λ poly[p,q] → refl }
-
-elem : Poly → Set
-elem p = Σ (pos p) (dir p)
-
-
-lift : {X Y : Set} → (p : Poly) → (X → Y) → (⦅ p ⦆ X → ⦅ p ⦆ Y)
-lift p f = λ{ (fst₁ , snd₁) → fst₁ , snd₁ ؛ f}
-
-yˢ : (S : Set) → Poly
-yˢ S = Unit ▹ λ _ → S
-
-𝓎 : Poly
-𝓎 = Unit ▹ (λ _ → Unit)
-
-yoneda : {S : Set} → {q : Poly} → Poly[ yˢ S , q ] ≈ ⦅ q ⦆ S
-yoneda =  record { to = λ{ record { onPos = onPos ; onDir = onDir } → onPos unit , λ x → onDir unit x } 
-                    ; from = λ { (fst₁ , snd₁) → record { onPos = λ _ → fst₁ ; onDir = λ i → snd₁ } } 
-                    ; from∘to = λ{ record { onPos = onPos ; onDir = onDir } → {! refl  !} } 
-                    ; to∘from = λ { (fst₁ , snd₁) → refl } }
-
-
--- Day 5 (Closures)
--- Poly(p ⊗ q , r) ≈ Poly (p , [q , r])
--- Poly(p × q , r) ≈ Poly (p , qʳ)
--- where [q , r] and qʳ are not defined here yet
-
-
-
-   
-
 
 -}       
