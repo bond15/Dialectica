@@ -192,12 +192,19 @@ DialSetCat .assoc   = eq-dial-maps refl refl
     _ show ! is an endofunctor on DialSets
 -}
 
-
 _⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ} 
 ⟨ U , X , α ⟩ ⊗ᴰ ⟨ V , Y , β ⟩ = ⟨ U × V , X × Y , m ⟩ 
     where m : U × V  → X × Y → Two
           m (u , v) (x , y) =  α u x ⊗² β v y 
+          
+open CatLib.BiFunctor DialSetCat DialSetCat DialSetCat
+open BiFunctorT
 
+tensor : BiFunctorT 
+tensor .F₀ = _⊗ᴰ_
+tensor .F₁ = {!   !}
+tensor .Fid = {!   !}
+tensor .Fcomp = {!   !}
 
 ---------------------------- Ignore following for now ---------------------------------------
 
