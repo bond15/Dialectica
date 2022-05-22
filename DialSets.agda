@@ -9,7 +9,9 @@ data Two : Set where ⊤ ⊥ : Two
 
 data Empty : Set where 
 
-data Unit : Set where tt : Unit
+-- needs an eta law
+record Unit : Set where
+  instance constructor tt
 
 _⊗²_ : Two → Two → Two 
 ⊤ ⊗² ⊤ = ⊤
@@ -104,9 +106,9 @@ _∘ᴰ_ {o} {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) =
 
 open import CatLib using (PreCat)
 open PreCat renaming (_∘_ to _∘ᶜ_)
-open import Cubical.Core.Everything using (_≡_; PathP;Path; I ; i0 ; i1 ; hcomp)
-open import Cubical.Foundations.Prelude using (cong; cong₂;refl; transport)
-
+open import Cubical.Core.Everything using (_≡_; PathP; Path; I ; i0 ; i1 ;hcomp ;transp ;_∧_ ;~_)
+open import Cubical.Foundations.Prelude using (cong; cong₂; funExt; refl; transport; _≡⟨_⟩_; _∎)
+open import Cubical.Foundations.Isomorphism using (isoToPath)
 -- defining equality of DialSet morphisms
 module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where 
     open DialSet A 
@@ -114,49 +116,48 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
 
     open DialSetMap m₁ renaming (cond-on-f&F to cond)
     open DialSetMap m₂ renaming (f to f' ; F to F'; cond-on-f&F to cond')
-    
-    funext : {o : Level}{A B : Set o}{f g : A → B} → (∀ (a : A) → f a ≡ g a) → f ≡ g 
-    funext p i a = p a i
 
-    funext₂ : {o : Level}{A B C : Set o}{f g : A → B → C} → (∀ (a : A)(b : B) → f a b ≡ g a b) → f ≡ g 
-    funext₂ p i x y = p x y i
 
-    dfunext₂ : {o : Level}{A : Set o}{B : A → Set o}{C : (a : A) → B a → Set o} {f g : (a : A) → (b : B a)  → C a b} → (∀ (a : A)(b : B a) → f a b ≡ g a b) → f ≡ g 
-    dfunext₂ p i x y = p x y i
+    {-
+        proof idea:
+            cond and cond' have the same type, as witnessed by eq-cond-type
+            the type of cond and cond' is either Empty or Unit
 
-    eq-maps-cond : (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (q i0 u y) ≤² β (p i0 u) y ≡ α u (q i1 u y) ≤² β (p i1 u) y
-    eq-maps-cond  p q u y = cong₂ _≤²_ (cong₂ α refl (λ i → q i u y))(cong₂ β (λ i → p i u) refl)
+            if cond has type Empty
+                then any element is trivially equal
+            if cond has type Unit
+                then any element is trivially equal
 
-    eq-maps-cond' : (i : I) → (p : f ≡ f') → (q : F ≡ F') → (u : U) → (y : Y) → α u (q i u y) ≤² β (p i u) y 
-    eq-maps-cond' i p q u y = {!   !}
+    https://agda.zulipchat.com/#narrow/stream/260790-cubical/topic/.E2.9C.94.20Stuck.20Proof/near/283197935
+    https://gist.github.com/bond15/073ba0715e74938af50f11c22b0d5455
+    -}
+
+    -- here is the kernel of the idea where `select` is `_≤²_` 
+    select : Two → Set 
+    select ⊤ = Unit
+    select ⊥ = Empty
+
+    -- use this idea to show `eq-elem`
+    test : (x y : Two)(p : x ≡ y)(e : select x)(e' : select y) → PathP (λ i → select (p i)) e e'
+    test ⊤ ⊤ p e e' i = transp (λ j → select (p (i ∧ j))) (~ i) e
+
+    eq-ty : {x y x' y' : Two} → (p : x ≡ x')(q : y ≡ y') → x ≤² y ≡ x' ≤² y' 
+    eq-ty {x} {y} {x'} {y'} p q = cong₂ _≤²_ p q
+
+    eq-elem : {x y x' y' : Two} → (p : x ≡ x')(q : y ≡ y')(e : x ≤² y)(e' : x' ≤² y') → PathP (λ i → eq-ty p q i) e e'
+    eq-elem p q e e' = {!   !}
+
+    eq-maps-cond' : (p : f ≡ f')(q : F ≡ F')(u : U)(y : Y) 
+        → PathP (λ i → α u (q i u y) ≤² β (p i u) y) (cond u y) (cond' u y)
+    eq-maps-cond' p q u y = {!  !}
 
     eq-cond : (p : f ≡ f') → (q : F ≡ F') → 
         PathP (λ i → (u : U)(y : Y) → α u ((q i) u y) ≤² β ((p i) u) y) cond cond'
-    eq-cond p q = {!   !}
-
-    -- λ i u y → eq-maps-cond' i p q u y --λ i u y → {!  eq-maps-cond p q  u y  !}
-    -- λ i u y → {! eq-maps-cond p q u y  !}
-    
-{-
-    test : {ℓ : Level}{A B : Set ℓ}{g g' : A → B → Set}{p : g ≡ g'}{f  : (a : A)(b : B) → g a b}
-        {f' : (a : A)(b : B) → g' a b} → PathP (λ i → (a : A)(b : B) → p i a b) f f'
-    test = λ i a b → {!   !}
-
--}
-  --  huh : (p : f ≡ f') → (q : F ≡ F') → PathP (λ i → (u : U)(y : Y) → eq-maps-cond p q u y i) cond cond'
-   -- huh p q = λ i u y → {!   !}
-    --λ i u y → {!  !}
-
- 
+    eq-cond p q = funExt λ u → funExt λ y → eq-maps-cond' p q u y
 
     cong-dial : f ≡ f' → F ≡ F' → m₁ ≡ m₂
     cong-dial p q = λ i → p i ∧ q i st eq-cond p q i
-    -- asdf p q i u y
-    --λ u y → huh p q i u y
-
-
-    -- transport {! eq-maps-cond p q u y  !} (cond u y)
-    -- {! transport (eq-maps-cond p q  u y) ? !}
+    -- At what point is it easier to specifically define an equality of morphisms type instead of relying on _≡_ ?
 
 open DialSet-eq-maps using (cong-dial)
 
@@ -191,9 +192,8 @@ _⊗ᴰ_ : DialSet → DialSet → DialSet
 -- tensor \ox
 -- Ayᴮ × Cyᴰ = ACyᴮᴰ
 
-postulate 
-    _∧_  : Two → Two → Two 
 
+{- 
 infix 2 _⊗ᴰ_
 _⊗ᴰ_ : DialSet → DialSet → DialSet
 ⟨ U , X , α ⟩ ⊗ᴰ ⟨ V , Y , β ⟩ = ⟨ U × V , X × Y , m ⟩ 
@@ -214,6 +214,7 @@ _&_ : DialSet → DialSet → DialSet
 _[-,-]_ : DialSet → DialSet → DialSet
 ⟨ U , X , α ⟩ [-,-] ⟨ V , Y , β ⟩ = ⟨ (U → V) × (U × Y → X) , U × Y , {!   !} ⟩ -- prove condition
 
+-}
 -- sym mon closed
 -- content from ch 1
 -- prove : A ⊗ B → C ⇔ A → [B,C] 
@@ -335,4 +336,4 @@ yoneda =  record { to = λ{ record { onPos = onPos ; onDir = onDir } → onPos u
    
 
 
--}  
+-}       
