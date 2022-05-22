@@ -214,28 +214,27 @@ _⊗ᴰ_ : DialSet → DialSet → DialSet
 -- Ayᴮ × Cyᴰ = ACyᴮᴰ
 
 
-{- 
-infix 2 _⊗ᴰ_
-_⊗ᴰ_ : DialSet → DialSet → DialSet
+_⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ} 
 ⟨ U , X , α ⟩ ⊗ᴰ ⟨ V , Y , β ⟩ = ⟨ U × V , X × Y , m ⟩ 
     where m : U × V  → X × Y → Two
-          m (u , v) (x , y) =  α u x ∧ β v y 
+          m (u , v) (x , y) =  α u x ⊗² β v y 
 
 --product \&
 -- Ayᴮ × Cyᴰ = ACyᴮ⁺ᴰ
 
-_&_ : DialSet → DialSet → DialSet
-⟨ U , X , α ⟩ & ⟨ V , Y , β ⟩ = ⟨ U × V  , X ⊎ Y , choose ⟩
+_&_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
+⟨ U , X , α ⟩ & ⟨ V , Y , β ⟩ = ⟨ U × V , X ⊎ Y , choose ⟩
     where choose : U × V → X ⊎ Y → Two 
           choose (u , v) (inj₁ x) = α u x 
           choose (u , v) (inj₂ y) = β v y
 
 -- internal hom (bifunctor)
 -- prove "profunctor"
-_[-,-]_ : DialSet → DialSet → DialSet
-⟨ U , X , α ⟩ [-,-] ⟨ V , Y , β ⟩ = ⟨ (U → V) × (U × Y → X) , U × Y , {!   !} ⟩ -- prove condition
+[_,_] : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
+[ ⟨ U , X , α ⟩ , ⟨ V , Y , β ⟩ ] = ⟨ (U → V) × (U × Y → X) , U × Y , m ⟩ 
+    where m : (U → V) × ((U × Y → X)) → U × Y → Two 
+          m (uv , uyx) (u , y) = α u (uyx (u , y)) ⊗² β (uv u) y
 
--}
 -- sym mon closed
 -- content from ch 1
 -- prove : A ⊗ B → C ⇔ A → [B,C] 
@@ -262,24 +261,4 @@ _[-,-]_ : DialSet → DialSet → DialSet
         assoc : (a b c : A) → (a ∙ b) ∙ c ≡ a ∙ (b ∙ c)
 -}
 --⟨ U × V , X x Y , alpha x beta ⟩ 
-
-
-{-
-infix 2 _⅋_ 
-_⅋_ : DialSet → DialSet → DialSet
-⟨ U ⇒ X ⇒2⟩∋ α ⅋ ⟨ V ⇒ Y ⇒2⟩∋ β = ⟨ U × V ⇒ X ⊎ Y ⇒2⟩∋ m
-
-        where m : U × V → X ⊎ Y → Two
-              m (u , v) (inj₁ x) = α u x
-              m (u , v) (inj₂ y) = β v y  
-
--}
-{-
---product \&
--- Ayᴮ × Cyᴰ = ACyᴮ⁺ᴰ
-
-_×ₚ_ : DialSet → DialSet → DialSet
-a ×ₚ b = record { U × V ; X + Y; choose(alpha, beta) }
--- want to choose a relation for a pair ((u,v), s), where s= (x, o) or (y, 1). if s=(x, 0) choose  alpha, otherwise choose beta
-
--}       
+ 
