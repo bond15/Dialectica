@@ -66,11 +66,6 @@ _⇒ᴰ_ = DialSetMap
 id-dial : {o : Level} {A : DialSet {o}} → A ⇒ᴰ A 
 id-dial = (λ u → u) ∧ (λ u x → x) st λ u x → ≤-refl
 
-{-
-    show DialSets is category
-    ! is an endofunctor on DialSets
--}
-
 {- 
 composition of morphisms 
 A := (U, X, α)
@@ -110,7 +105,7 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     open DialSet B renaming (U to V ; X to Y; α to β)
 
     open DialSetMap m₁ renaming (cond-on-f&F to cond)
-    open DialSetMap m₂ renaming (f to f' ; F to F'; cond-on-f&F to cond')
+    open DialSetMap m₂ renaming (f to g ; F to G; cond-on-f&F to cond')
 
     {-
         proof idea:
@@ -132,8 +127,10 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     open import Cubical.Foundations.Prelude using (cong₂; funExt; funExt⁻; refl)
     
     -- This says that the Type returned by _≤²_ is equal when applied to pairwise equal args
-    eq-ty : {x y x' y' : Two} → (p : x ≡ x')(q : y ≡ y') → x ≤² y ≡ x' ≤² y' 
-    eq-ty {x} {y} {x'} {y'} p q = cong₂ _≤²_ p q
+    eq-ty : {x y x' y' : Two} → 
+            (p : x ≡ x')(q : y ≡ y') → 
+            x ≤² y ≡ x' ≤² y' 
+    eq-ty p q = cong₂ _≤²_ p q
 
     -- uh... just ignore this... nothing to see here (and if you have better suggestions please help :))
     -- really all this says is..
@@ -143,7 +140,9 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     -- Or 
     --      x ≤² y and x' ≤² y'  both evaluate to Empty
     --      in which case e and e' don't exist, so they are trivialy equal
-    eq-elem : {x y x' y' : Two} → (p : x ≡ x')(q : y ≡ y')(e : x ≤² y)(e' : x' ≤² y') → (λ i → eq-ty p q i) [ e ≡ e' ]
+    eq-elem : {x y x' y' : Two} → 
+              (p : x ≡ x')(q : y ≡ y')(e : x ≤² y)(e' : x' ≤² y') → 
+              (λ i → eq-ty p q i) [ e ≡ e' ]
     eq-elem {⊤} {⊤} {⊤} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
     eq-elem {⊤} {⊤} {⊥} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
     eq-elem {⊤} {⊤} {⊥} {⊥} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
@@ -157,18 +156,18 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     -- This uses the above, but instead of x and y the quantities are α u (F u y) and β (f u) y)
     eq-cond : 
         -- given p and q
-        (p : f ≡ f')(q : F ≡ F') → 
+        (p : f ≡ g)(q : F ≡ G) → 
         -- in Type
         (λ i → (u : U)(y : Y) → α u ((q i) u y) ≤² β ((p i) u) y) 
         -- cond and cond' are equal
         [ cond ≡ cond' ]
-    eq-cond p q = funExt λ u → funExt λ y → eq-elem (cong₂ α refl (funExt⁻ (funExt⁻ (λ i y u → q i u y) y) u) )
+    eq-cond p q = funExt λ u → funExt λ y → eq-elem (cong₂ α refl (funExt⁻ (funExt⁻ (λ i y u → q i u y) y) u))
                                                     (cong₂ β (funExt⁻ p u ) refl) 
                                                     (cond  u y) 
                                                     (cond' u y)
 
     -- Two morphisms in Dial(Set)(2) are equal when "given the same maps f and F"
-    eq-dial-maps : f ≡ f' → F ≡ F' → m₁ ≡ m₂
+    eq-dial-maps : f ≡ g → F ≡ G → m₁ ≡ m₂
     eq-dial-maps p q = λ i → p i ∧ q i st eq-cond p q i
     -- At what point is it easier to specifically define an equality of morphisms type instead of relying on _≡_ ?
 
@@ -187,6 +186,12 @@ DialSetCat ._∘ᶜ_    = _∘ᴰ_
 DialSetCat .idr     = eq-dial-maps refl refl
 DialSetCat .idl     = eq-dial-maps refl refl
 DialSetCat .assoc   = eq-dial-maps refl refl
+
+
+{-
+    ✓ show DialSets is category
+    _ show ! is an endofunctor on DialSets
+-}
 
 
 ---------------------------- Ignore following for now ---------------------------------------
