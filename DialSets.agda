@@ -38,11 +38,29 @@ _≤²_ : Two → Two → Set
 ≤-trans {⊥} {⊥} {⊤} _ _ = tt
 ≤-trans {⊥} {⊥} {⊥} _ _ = tt
 
+compat : ∀{a b : Two} → a ≤² b → (∀{c : Two} → (a ⊗² c) ≤² (b ⊗² c))
+compat {⊤} {⊤} r {⊤} = tt
+compat {⊤} {⊤} r {⊥} = tt
+compat {⊥} {⊤} r {⊤} = tt
+compat {⊥} {⊤} r {⊥} = tt
+compat {⊥} {⊥} r {⊤} = tt
+compat {⊥} {⊥} r {⊥} = tt
+
+swap-⊗ : ∀{a b : Two} → (a ⊗² b) ≤² (b ⊗² a)
+swap-⊗ {⊤} {⊤} = tt
+swap-⊗ {⊤} {⊥} = tt
+swap-⊗ {⊥} {⊤} = tt
+swap-⊗ {⊥} {⊥} = tt
+
 bifun : ∀{a b c d : Two} → 
     a ≤² c → 
     b ≤² d → 
     (a ⊗² b) ≤² (c ⊗² d)
-bifun t1 t2 = {!   !}
+bifun {b = b} {c = c} t1 t2 = let abRcb = compat t1 {b}
+                                  bcRdc = compat t2 {c} 
+                                  abRbc = ≤-trans abRcb swap-⊗
+                                  bcRcd = ≤-trans bcRdc swap-⊗
+                                in ≤-trans abRbc bcRcd
 
 
 -- Objects
