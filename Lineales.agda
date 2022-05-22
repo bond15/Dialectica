@@ -20,6 +20,12 @@ module Two where
     ⊥ ⊗² ⊤ = ⊥
     ⊥ ⊗² ⊥ = ⊥
 
+    _⊸²_ : Two → Two → Two 
+    ⊤ ⊸² ⊤ = ⊤
+    ⊤ ⊸² ⊥ = ⊥
+    ⊥ ⊸² ⊤ = ⊤
+    ⊥ ⊸² ⊥ = ⊤
+
     -- modeling ⊥ → ⊤ category
     _≤²_ : Two → Two → Set 
     ⊤ ≤² ⊤ = Unit
@@ -89,9 +95,18 @@ module Two where
         two-mon .compat = compat'
 
         two-lineale : Lineale Two 
-        two-lineale ._⊸_ = {!   !}
-        two-lineale .rlcomp = {!   !}
-        two-lineale .adj = {!   !}
+        two-lineale ._⊸_ = _⊸²_
+        two-lineale .rlcomp {⊤} {⊤} = tt
+        two-lineale .rlcomp {⊤} {⊥} = tt
+        two-lineale .rlcomp {⊥} {⊤} = tt
+        two-lineale .rlcomp {⊥} {⊥} = tt
+        two-lineale .adj {⊤} {⊤} {⊤} h = tt
+        two-lineale .adj {⊤} {⊤} {⊥} h = tt
+        two-lineale .adj {⊤} {⊥} {⊥} h = tt
+        two-lineale .adj {⊥} {⊤} {⊤} h = tt
+        two-lineale .adj {⊥} {⊤} {⊥} h = tt
+        two-lineale .adj {⊥} {⊥} {⊤} h = tt
+        two-lineale .adj {⊥} {⊥} {⊥} h = tt
 
 
     

@@ -112,7 +112,6 @@ module _ {o ℓ : Level}(𝒞 : PreCat o ℓ)where
         DC : PreCat (o ⊔ ℓ) (o ⊔ ℓ) 
         DC .Ob = Obj
         DC ._⇒_ = Hom 
-        DC .Hom-set = {!   !}
         DC .id = {!   !} 
         DC ._∘_ = {!   !}
         DC .idr = {!   !}
