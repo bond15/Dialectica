@@ -38,6 +38,13 @@ _≤²_ : Two → Two → Set
 ≤-trans {⊥} {⊥} {⊤} _ _ = tt
 ≤-trans {⊥} {⊥} {⊥} _ _ = tt
 
+bifun : ∀{a b c d : Two} → 
+    a ≤² c → 
+    b ≤² d → 
+    (a ⊗² b) ≤² (c ⊗² d)
+bifun t1 t2 = {!   !}
+
+
 -- Objects
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
@@ -198,7 +205,7 @@ _⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
     where m : U × V  → X × Y → Two
           m (u , v) (x , y) =  α u x ⊗² β v y 
 
-module huhh {ℓ : Level} where
+module TensorBiFunctor {ℓ : Level} where
     open DialCat using (DialSetCat)
     open import CatLib using (PreCat)
     open PreCat (DialSetCat {ℓ})
@@ -206,7 +213,6 @@ module huhh {ℓ : Level} where
     open BiFunctorT
     open DialSet-eq-maps using (eq-dial-maps)
     open import Cubical.Foundations.Prelude using (refl)
-
 
     tensor : BiFunctorT 
     tensor .F₀ = _⊗ᴰ_
@@ -229,12 +235,12 @@ module huhh {ℓ : Level} where
                 (α (fst uv) (F (fst uv) (fst x'y')) ⊗² β (snd uv) (G (snd uv) (snd x'y'))) 
                     ≤² 
                 (α' (f (fst uv)) (fst x'y') ⊗² β' (g (snd uv)) (snd x'y'))
-            tensor-cond (u , v) (x' , y') = {!   !}
+            tensor-cond (u , v) (x' , y') = bifun (cond u x') (cond' v y')
 
             fmap : (A ⊗ᴰ B) ⇒ (A' ⊗ᴰ B')
             fmap = tensor-f ∧ tensor-F st tensor-cond
 
-    tensor .Fid = eq-dial-maps  refl refl
+    tensor .Fid   = eq-dial-maps refl refl
     tensor .Fcomp = eq-dial-maps refl refl
 
 ---------------------------- Ignore following for now ---------------------------------------
