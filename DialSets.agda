@@ -104,11 +104,6 @@ _∘ᴰ_ {o} {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) =
 
 
 
-open import CatLib using (PreCat)
-open PreCat renaming (_∘_ to _∘ᶜ_)
-open import Cubical.Core.Everything using (_≡_; PathP; Path; I ; i0 ; i1 ;hcomp ;transp ;_∧_ ;~_)
-open import Cubical.Foundations.Prelude using (cong; cong₂; funExt; refl; transport; _≡⟨_⟩_; _∎)
-open import Cubical.Foundations.Isomorphism using (isoToPath)
 -- defining equality of DialSet morphisms
 module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where 
     open DialSet A 
@@ -117,10 +112,9 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     open DialSetMap m₁ renaming (cond-on-f&F to cond)
     open DialSetMap m₂ renaming (f to f' ; F to F'; cond-on-f&F to cond')
 
-
     {-
         proof idea:
-            cond and cond' have the same type, as witnessed by eq-cond-type
+            cond and cond' have the same type, as witnessed by eq-ty
             the type of cond and cond' is either Empty or Unit
 
             if cond has type Empty
@@ -131,35 +125,58 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     https://agda.zulipchat.com/#narrow/stream/260790-cubical/topic/.E2.9C.94.20Stuck.20Proof/near/283197935
     https://gist.github.com/bond15/073ba0715e74938af50f11c22b0d5455
     -}
-
-    -- here is the kernel of the idea where `select` is `_≤²_` 
-    select : Two → Set 
-    select ⊤ = Unit
-    select ⊥ = Empty
-
-    -- use this idea to show `eq-elem`
-    test : (x y : Two)(p : x ≡ y)(e : select x)(e' : select y) → PathP (λ i → select (p i)) e e'
-    test ⊤ ⊤ p e e' i = transp (λ j → select (p (i ∧ j))) (~ i) e
-
+    
+    -- start proof
+    -- pull in some tools
+    open import Cubical.Core.Everything using (_≡_; _[_≡_]; transp ;_∧_ ;~_)
+    open import Cubical.Foundations.Prelude using (cong₂; funExt; funExt⁻; refl)
+    
+    -- This says that the Type returned by _≤²_ is equal when applied to pairwise equal args
     eq-ty : {x y x' y' : Two} → (p : x ≡ x')(q : y ≡ y') → x ≤² y ≡ x' ≤² y' 
     eq-ty {x} {y} {x'} {y'} p q = cong₂ _≤²_ p q
 
-    eq-elem : {x y x' y' : Two} → (p : x ≡ x')(q : y ≡ y')(e : x ≤² y)(e' : x' ≤² y') → PathP (λ i → eq-ty p q i) e e'
-    eq-elem p q e e' = {!   !}
+    -- uh... just ignore this... nothing to see here (and if you have better suggestions please help :))
+    -- really all this says is..
+    -- Either
+    --      x ≤² y and x' ≤² y'  both evaluate to Unit
+    --      in which case e and e' are both tt, so they are trivially equal
+    -- Or 
+    --      x ≤² y and x' ≤² y'  both evaluate to Empty
+    --      in which case e and e' don't exist, so they are trivialy equal
+    eq-elem : {x y x' y' : Two} → (p : x ≡ x')(q : y ≡ y')(e : x ≤² y)(e' : x' ≤² y') → (λ i → eq-ty p q i) [ e ≡ e' ]
+    eq-elem {⊤} {⊤} {⊤} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊤} {⊤} {⊥} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊤} {⊤} {⊥} {⊥} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊥} {⊤} {⊤} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊥} {⊤} {⊥} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊥} {⊤} {⊥} {⊥} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊥} {⊥} {⊤} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊥} {⊥} {⊥} {⊤} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
+    eq-elem {⊥} {⊥} {⊥} {⊥} p q e e' i = transp (λ j → _≤²_ (p (i ∧ j)) (q  (i ∧ j))) (~ i) e
 
-    eq-maps-cond' : (p : f ≡ f')(q : F ≡ F')(u : U)(y : Y) 
-        → PathP (λ i → α u (q i u y) ≤² β (p i u) y) (cond u y) (cond' u y)
-    eq-maps-cond' p q u y = {!  !}
+    -- This uses the above, but instead of x and y the quantities are α u (F u y) and β (f u) y)
+    eq-cond : 
+        -- given p and q
+        (p : f ≡ f')(q : F ≡ F') → 
+        -- in Type
+        (λ i → (u : U)(y : Y) → α u ((q i) u y) ≤² β ((p i) u) y) 
+        -- cond and cond' are equal
+        [ cond ≡ cond' ]
+    eq-cond p q = funExt λ u → funExt λ y → eq-elem (cong₂ α refl (funExt⁻ (funExt⁻ (λ i y u → q i u y) y) u) )
+                                                    (cong₂ β (funExt⁻ p u ) refl) 
+                                                    (cond  u y) 
+                                                    (cond' u y)
 
-    eq-cond : (p : f ≡ f') → (q : F ≡ F') → 
-        PathP (λ i → (u : U)(y : Y) → α u ((q i) u y) ≤² β ((p i) u) y) cond cond'
-    eq-cond p q = funExt λ u → funExt λ y → eq-maps-cond' p q u y
-
-    cong-dial : f ≡ f' → F ≡ F' → m₁ ≡ m₂
-    cong-dial p q = λ i → p i ∧ q i st eq-cond p q i
+    -- Two morphisms in Dial(Set)(2) are equal when "given the same maps f and F"
+    eq-dial-maps : f ≡ f' → F ≡ F' → m₁ ≡ m₂
+    eq-dial-maps p q = λ i → p i ∧ q i st eq-cond p q i
     -- At what point is it easier to specifically define an equality of morphisms type instead of relying on _≡_ ?
 
-open DialSet-eq-maps using (cong-dial)
+
+open import Cubical.Foundations.Prelude using (refl)
+open DialSet-eq-maps using (eq-dial-maps)
+open import CatLib using (PreCat)
+open PreCat renaming (_∘_ to _∘ᶜ_)
 
 -- Show DialSet is a category
 DialSetCat : {o : Level} → PreCat (lsuc o) (o) 
@@ -167,9 +184,9 @@ DialSetCat .Ob      = DialSet
 DialSetCat ._⇒_     = DialSetMap
 DialSetCat .id      = id-dial
 DialSetCat ._∘ᶜ_    = _∘ᴰ_
-DialSetCat .idr     = cong-dial refl refl
-DialSetCat .idl     = cong-dial refl refl
-DialSetCat .assoc   = cong-dial refl refl
+DialSetCat .idr     = eq-dial-maps refl refl
+DialSetCat .idl     = eq-dial-maps refl refl
+DialSetCat .assoc   = eq-dial-maps refl refl
 
 
 ---------------------------- Ignore following for now ---------------------------------------
