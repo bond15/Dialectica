@@ -10,7 +10,7 @@ data Two : Set where ⊤ ⊥ : Two
 data Empty : Set where 
 
 -- needs an eta law for transp in proof of eq-dial-maps
-record Unit : Set where instance constructor tt
+record Unit {ℓ : Level} : Set ℓ where instance constructor tt
 
 _⊗²_ : Two → Two → Two 
 ⊤ ⊗² ⊤ = ⊤
@@ -266,16 +266,24 @@ module Mon {ℓ : Level} where
     open DialCat using (DialSetCat)
     open import CatLib using (PreCat)
     open PreCat (DialSetCat {ℓ})
+    open CatLib.Iso (DialSetCat {ℓ})
 
     open TensorBiFunctor using (tensor)
 
     open CatLib.Monoidal (DialSetCat {ℓ}) using (MonoidalT)
     open MonoidalT
+    
+
+    ⊗-unit : Ob 
+    ⊗-unit = ⟨ Unit , Unit , (λ{ tt tt → ⊤}) ⟩
 
     DialCatMonoidal : MonoidalT
-    DialCatMonoidal .⊗ = {!   !}
-    DialCatMonoidal .unit = {!   !}
-    DialCatMonoidal .unitorˡ = {!   !}    
+    DialCatMonoidal .⊗ = tensor
+    DialCatMonoidal .unit = ⊗-unit
+    DialCatMonoidal .unitorˡ {X} = prf₁ 
+        where 
+            prf₁ : {! ⊗-unit ⊗₀ X  !} ≅ X
+            prf₁ = {!   !} 
     DialCatMonoidal .unitorʳ = {!   !}
     DialCatMonoidal .associator = {!   !}
     DialCatMonoidal .pentagon = {!   !}
@@ -343,4 +351,4 @@ _&_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
         assoc : (a b c : A) → (a ∙ b) ∙ c ≡ a ∙ (b ∙ c)
 -}
 --⟨ U × V , X x Y , alpha x beta ⟩ 
- 
+  
