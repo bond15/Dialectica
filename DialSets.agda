@@ -171,20 +171,21 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
     -- At what point is it easier to specifically define an equality of morphisms type instead of relying on _≡_ ?
 
 
-open import Cubical.Foundations.Prelude using (refl)
-open DialSet-eq-maps using (eq-dial-maps)
-open import CatLib using (PreCat)
-open PreCat renaming (_∘_ to _∘ᶜ_)
+module DialCat where 
+    open import Cubical.Foundations.Prelude using (refl)
+    open DialSet-eq-maps using (eq-dial-maps)
+    open import CatLib using (PreCat)
+    open PreCat renaming (_∘_ to _∘ᶜ_)
 
--- Show DialSet is a category
-DialSetCat : {o : Level} → PreCat (lsuc o) (o) 
-DialSetCat .Ob      = DialSet 
-DialSetCat ._⇒_     = DialSetMap
-DialSetCat .id      = id-dial
-DialSetCat ._∘ᶜ_    = _∘ᴰ_
-DialSetCat .idr     = eq-dial-maps refl refl
-DialSetCat .idl     = eq-dial-maps refl refl
-DialSetCat .assoc   = eq-dial-maps refl refl
+    -- Show DialSet is a category
+    DialSetCat : {o : Level} → PreCat (lsuc o) (o) 
+    DialSetCat .Ob      = DialSet 
+    DialSetCat ._⇒_     = DialSetMap
+    DialSetCat .id      = id-dial
+    DialSetCat ._∘ᶜ_    = _∘ᴰ_
+    DialSetCat .idr     = eq-dial-maps refl refl
+    DialSetCat .idl     = eq-dial-maps refl refl
+    DialSetCat .assoc   = eq-dial-maps refl refl
 
 
 {-
@@ -196,15 +197,39 @@ _⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
 ⟨ U , X , α ⟩ ⊗ᴰ ⟨ V , Y , β ⟩ = ⟨ U × V , X × Y , m ⟩ 
     where m : U × V  → X × Y → Two
           m (u , v) (x , y) =  α u x ⊗² β v y 
-          
-open CatLib.BiFunctor DialSetCat DialSetCat DialSetCat
-open BiFunctorT
 
-tensor : BiFunctorT 
-tensor .F₀ = _⊗ᴰ_
-tensor .F₁ = {!   !}
-tensor .Fid = {!   !}
-tensor .Fcomp = {!   !}
+module huhh {ℓ : Level} where
+    open DialCat using (DialSetCat)
+    open import CatLib using (PreCat)
+    open PreCat (DialSetCat {ℓ})
+    open CatLib.BiFunctor (DialSetCat {ℓ}) (DialSetCat {ℓ}) (DialSetCat {ℓ}) using (BiFunctorT)
+    open BiFunctorT
+
+    tensor : BiFunctorT 
+    tensor .F₀ = _⊗ᴰ_
+    tensor .F₁ {A} {A'} {B} {B'} m₁ m₂ = fmap
+        where 
+            open DialSet A                                                      -- A  := ⟨ U  , X  , α  ⟩ 
+            open DialSet A' renaming (U to U' ; X to X'; α to α')               -- A' := ⟨ U' , X' , α' ⟩ 
+            open DialSet B  renaming (U to V  ; X to Y ; α to β )               -- B  := ⟨ V  , Y  , β  ⟩ 
+            open DialSet B' renaming (U to V' ; X to Y'; α to β')               -- B' := ⟨ V' , Y' , β' ⟩ 
+            open DialSetMap m₁ renaming (cond-on-f&F to cond)                   -- m₁ := f ∧ F st cond
+            open DialSetMap m₂ renaming (f to g; F to G; cond-on-f&F to cond')  -- m₂ := g ∧ G st cond'
+            
+            tensor-f : (U × V) → (U' × V')
+            tensor-f (u , v) = (f u) , (g v)
+
+            tensor-F : U × V → X' × Y' → X × Y
+            tensor-F (u , v) (x' , y') = (F u x') , (G v y')
+
+            tensor-cond : {!   !}
+            tensor-cond = {!   !}
+
+            fmap : (A ⊗ᴰ B) ⇒ (A' ⊗ᴰ B')
+            fmap = tensor-f ∧ tensor-F st {!   !}
+
+    tensor .Fid = {!   !}
+    tensor .Fcomp = {!   !}
 
 ---------------------------- Ignore following for now ---------------------------------------
 
