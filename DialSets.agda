@@ -204,6 +204,9 @@ module huhh {ℓ : Level} where
     open PreCat (DialSetCat {ℓ})
     open CatLib.BiFunctor (DialSetCat {ℓ}) (DialSetCat {ℓ}) (DialSetCat {ℓ}) using (BiFunctorT)
     open BiFunctorT
+    open DialSet-eq-maps using (eq-dial-maps)
+    open import Cubical.Foundations.Prelude using (refl)
+
 
     tensor : BiFunctorT 
     tensor .F₀ = _⊗ᴰ_
@@ -222,14 +225,17 @@ module huhh {ℓ : Level} where
             tensor-F : U × V → X' × Y' → X × Y
             tensor-F (u , v) (x' , y') = (F u x') , (G v y')
 
-            tensor-cond : {!   !}
-            tensor-cond = {!   !}
+            tensor-cond : (uv : U × V)(x'y' : X' × Y') → 
+                (α (fst uv) (F (fst uv) (fst x'y')) ⊗² β (snd uv) (G (snd uv) (snd x'y'))) 
+                    ≤² 
+                (α' (f (fst uv)) (fst x'y') ⊗² β' (g (snd uv)) (snd x'y'))
+            tensor-cond (u , v) (x' , y') = {!   !}
 
             fmap : (A ⊗ᴰ B) ⇒ (A' ⊗ᴰ B')
-            fmap = tensor-f ∧ tensor-F st {!   !}
+            fmap = tensor-f ∧ tensor-F st tensor-cond
 
-    tensor .Fid = {!   !}
-    tensor .Fcomp = {!   !}
+    tensor .Fid = eq-dial-maps  refl refl
+    tensor .Fcomp = eq-dial-maps refl refl
 
 ---------------------------- Ignore following for now ---------------------------------------
 
