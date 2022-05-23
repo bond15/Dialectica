@@ -1,4 +1,5 @@
--- modifying Eric's file
+-- modifying Eric's file DialSet is Dial_2Set, so file starts with Two
+
 module DialSets where 
 open import Level renaming (zero to lzero; suc to lsuc)
 open import Agda.Builtin.Sigma 
@@ -39,6 +40,9 @@ _≤²_ : Two → Two → Set
 ≤-trans {⊥} {⊥} {⊥} _ _ = tt
 
 -- Objects
+-- in Dial objects are normally A = (U,X, alpha), B = (V, Y, beta)
+-- rewriting  A as (pos A, dir A, alpha) to highlight similarity to Poly (pos=positions, dir=directions)
+
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
     field
@@ -47,6 +51,7 @@ record DialSet {ℓ : Level} : Set (lsuc ℓ) where
         α : pos A → dir A → Two  
 
 -- Morphisms
+
 record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where 
     constructor _∧_st_
     open DialSet A 
