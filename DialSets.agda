@@ -264,7 +264,7 @@ module TensorBiFunctor {ℓ : Level} where
 
 module Mon {ℓ : Level} where 
     open import Cubical.Core.Everything using (_≡_)
-    open import Cubical.Foundations.Prelude using (refl)
+    open import Cubical.Foundations.Prelude using (refl; transp)
     open DialSet-eq-maps using (eq-dial-maps; eq-elem)
     open DialCat using (DialSetCat)
     open import CatLib using (PreCat)
@@ -292,8 +292,9 @@ module Mon {ℓ : Level} where
     DialCatMonoidal .unit = ⊗-unit
     DialCatMonoidal .unitorˡ {A} = prf 
         where 
+            open DialSet A
             prf : (⊗-unit ⊗₀ A) ≅ A
-            prf .from = (λ{(tt , u) → u}) ∧ (λ{ (tt , u) x → tt , x}) st λ u y → {!   !}
+            prf .from = (λ{(tt , u) → u}) ∧ (λ{ (tt , u) x → tt , x}) st λ{ (tt , u) x → {!  !}}
             prf .to   = (λ{ u → tt , u}) ∧ (λ{ x (tt , u) → u}) st {!   !}
             prf .isoˡ = eq-dial-maps refl refl
             prf .isoʳ = eq-dial-maps refl refl 
@@ -312,6 +313,40 @@ module Mon {ℓ : Level} where
             prf .isoˡ = eq-dial-maps refl refl 
             prf .isoʳ = eq-dial-maps refl refl
     DialCatMonoidal .pentagon = eq-dial-maps refl refl 
+
+
+[_,_] : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
+[ ⟨ U , X , α ⟩ , ⟨ V , Y , β ⟩ ] = ⟨ (U → V) × (U × Y → X) , U × Y , m ⟩ 
+    where m : (U → V) × ((U × Y → X)) → U × Y → Two 
+          m (uv , uyx) (u , y) = α u (uyx (u , y)) ⊗² β (uv u) y
+
+module InternalHomBiFunctor {ℓ : Level}  where 
+    open DialCat using (DialSetCat)
+    open import CatLib using (PreCat)
+    open PreCat (DialSetCat {ℓ})
+    open CatLib.BiFunctor (DialSetCat {ℓ}) (DialSetCat {ℓ}) (DialSetCat {ℓ}) using (BiFunctorT)
+    open BiFunctorT
+    open DialSet-eq-maps using (eq-dial-maps)
+    open import Cubical.Foundations.Prelude using (refl)
+
+    int-hom : BiFunctorT
+    int-hom .F₀     = [_,_]
+    int-hom .F₁ {A} {A'} {B} {B'} m₁ m₂ = fmap
+        where 
+            int-f : {!   !}
+            int-f = {!   !}
+
+            int-F : {!   !}
+            int-F = {!   !}
+
+            int-cond : {!   !}
+            int-cond = {!   !}
+
+            fmap : [ A , B ] ⇒ [ A' , B' ]
+            fmap = int-f ∧ int-F st int-cond
+    int-hom .Fid    = {!   !}
+    int-hom .Fcomp  = {!   !}
+    
 
 ---------------------------- Ignore following for now ---------------------------------------
 
@@ -345,10 +380,10 @@ _&_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
 
 -- internal hom (bifunctor)
 -- prove "profunctor"
-[_,_] : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
-[ ⟨ U , X , α ⟩ , ⟨ V , Y , β ⟩ ] = ⟨ (U → V) × (U × Y → X) , U × Y , m ⟩ 
-    where m : (U → V) × ((U × Y → X)) → U × Y → Two 
-          m (uv , uyx) (u , y) = α u (uyx (u , y)) ⊗² β (uv u) y
+--[_,_] : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
+--[ ⟨ U , X , α ⟩ , ⟨ V , Y , β ⟩ ] = ⟨ (U → V) × (U × Y → X) , U × Y , m ⟩ 
+--    where m : (U → V) × ((U × Y → X)) → U × Y → Two 
+--          m (uv , uyx) (u , y) = α u (uyx (u , y)) ⊗² β (uv u) y
 
 -- sym mon closed
 -- content from ch 1
