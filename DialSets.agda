@@ -56,10 +56,10 @@ bifun : ∀{a b c d : Two} →
     a ≤² c → 
     b ≤² d → 
     (a ⊗² b) ≤² (c ⊗² d)
-bifun {b = b} {c = c} t1 t2 = let abRcb = compat t1 {b}
-                                  bcRdc = compat t2 {c} 
-                                  abRbc = ≤-trans abRcb swap-⊗
-                                  bcRcd = ≤-trans bcRdc swap-⊗
+bifun {b = b} {c = c} aRc bRd = let abRcb = compat aRc {b}
+                                    bcRdc = compat bRd {c} 
+                                    abRbc = ≤-trans abRcb swap-⊗
+                                    bcRcd = ≤-trans bcRdc swap-⊗
                                 in ≤-trans abRbc bcRcd
 
 
@@ -263,30 +263,55 @@ module TensorBiFunctor {ℓ : Level} where
 
 
 module Mon {ℓ : Level} where 
+    open import Cubical.Core.Everything using (_≡_)
+    open import Cubical.Foundations.Prelude using (refl)
+    open DialSet-eq-maps using (eq-dial-maps; eq-elem)
     open DialCat using (DialSetCat)
     open import CatLib using (PreCat)
     open PreCat (DialSetCat {ℓ})
     open CatLib.Iso (DialSetCat {ℓ})
+    open _≅_
 
     open TensorBiFunctor using (tensor)
 
     open CatLib.Monoidal (DialSetCat {ℓ}) using (MonoidalT)
-    open MonoidalT
+    open MonoidalT hiding (_⊗₀_;_⊗₁_)
     
-
     ⊗-unit : Ob 
     ⊗-unit = ⟨ Unit , Unit , (λ{ tt tt → ⊤}) ⟩
 
+    _⊗₀_ : Ob → Ob → Ob 
+    _⊗₀_ = CatLib.BiFunctor.BiFunctorT.F₀ tensor
+
+    _⊗₁_ : {X Y Z W : Ob} → X ⇒ Y → Z ⇒ W → (X ⊗₀ Z) ⇒ (Y ⊗₀ W)
+    _⊗₁_ = CatLib.BiFunctor.BiFunctorT.F₁ tensor
+
+    -- suspicious..?  is using the underlying product on Sets and its projections what we want?
     DialCatMonoidal : MonoidalT
     DialCatMonoidal .⊗ = tensor
     DialCatMonoidal .unit = ⊗-unit
-    DialCatMonoidal .unitorˡ {X} = prf₁ 
+    DialCatMonoidal .unitorˡ {A} = prf 
         where 
-            prf₁ : {! ⊗-unit ⊗₀ X  !} ≅ X
-            prf₁ = {!   !} 
-    DialCatMonoidal .unitorʳ = {!   !}
-    DialCatMonoidal .associator = {!   !}
-    DialCatMonoidal .pentagon = {!   !}
+            prf : (⊗-unit ⊗₀ A) ≅ A
+            prf .from = (λ{(tt , u) → u}) ∧ (λ{ (tt , u) x → tt , x}) st λ u y → {!   !}
+            prf .to   = (λ{ u → tt , u}) ∧ (λ{ x (tt , u) → u}) st {!   !}
+            prf .isoˡ = eq-dial-maps refl refl
+            prf .isoʳ = eq-dial-maps refl refl 
+    DialCatMonoidal .unitorʳ {A} = prf 
+        where 
+            prf : (A ⊗₀ ⊗-unit) ≅ A
+            prf .from = (λ{ (u , tt) → u}) ∧ (λ{ (u , tt) x → x , tt}) st {!   !}
+            prf .to   = (λ{ u → u , tt}) ∧ (λ{ u (x , tt) → x}) st {!   !}
+            prf .isoˡ = eq-dial-maps refl refl
+            prf .isoʳ = eq-dial-maps refl refl
+    DialCatMonoidal .associator {X}{Y}{Z} = prf 
+        where 
+            prf : {X Y Z : Ob} → (X ⊗₀ Y) ⊗₀ Z ≅ X ⊗₀ (Y ⊗₀ Z)
+            prf .from = (λ{ ((x , y) , z) → x , (y , z)}) ∧ (λ{ _ (x' , y' , z') → (x' , y') , z'}) st {!   !}
+            prf .to   = (λ{ (x , y , z) → (x , y) , z}) ∧ (λ{ _ ((x , y) , z) → x , ( y , z)}) st {!   !}
+            prf .isoˡ = eq-dial-maps refl refl 
+            prf .isoʳ = eq-dial-maps refl refl
+    DialCatMonoidal .pentagon = eq-dial-maps refl refl 
 
 ---------------------------- Ignore following for now ---------------------------------------
 
