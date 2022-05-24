@@ -1,4 +1,4 @@
-NOTE: Transitioning work to here https://github.com/vcvpaiva/Dialectica
+NOTE: Work is primarily done on this fork https://github.com/vcvpaiva/Dialectica
 
 # Dialectica
 
