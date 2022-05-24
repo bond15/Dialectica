@@ -109,6 +109,7 @@ module _ {o ℓ : Level}(𝒞 : Category o ℓ)where
 
     
         -- now try to make a category out of this...
+
         DC : Category (o ⊔ ℓ) (o ⊔ ℓ) 
         DC .Ob = Obj
         DC ._⇒_ = Hom 
@@ -125,4 +126,4 @@ module _ {o ℓ : Level}(𝒞 : Category o ℓ)where
         
 
     
-   
+
