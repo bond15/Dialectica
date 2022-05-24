@@ -64,6 +64,7 @@ bifun {b = b} {c = c} aRc bRd = let abRcb = compat aRc {b}
 
 
 -- Objects
+
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
     field
@@ -88,7 +89,7 @@ _⇒ᴰ_ : {o : Level} → DialSet {o} → DialSet {o} → Set o
 _⇒ᴰ_ = DialSetMap
 
 id-dial : {o : Level} {A : DialSet {o}} → A ⇒ᴰ A 
-id-dial = (λ u → u) ∧ (λ u x → x) st λ u x → ≤-refl
+id-dial = (λ u → u) ∧ (λ u x → x) st (λ u x → ≤-refl)
 
 {- 
 composition of morphisms 
@@ -97,26 +98,26 @@ B := (V, Y, β)
 C := (W, Z, γ)
 -}
 _∘ᴰ_ : {o : Level}{A B C : DialSet {o}} → (B ⇒ᴰ C) → (A ⇒ᴰ B) → (A ⇒ᴰ C)
-_∘ᴰ_ {o} {A} {B} {C} (f₂ ∧ F₂ st cond₂) (f₁ ∧ F₁ st cond₁) = f' ∧ F' st cond'
+_∘ᴰ_ {o} {A} {B} {C} (g ∧ G st cond₂) (f ∧ F st cond₁) = f' ∧ F' st cond'
     where 
         open DialSet A 
         open DialSet B renaming (U to V ; X to Y; α to β)
         open DialSet C renaming (U to W ; X to Z; α to γ)
 
         f' : U → W 
-        f' = f₂ ∘ f₁
+        f' = g ∘ f
 
         F' : U → Z → X
         F' u z = let 
-                 v = f₁ u
-                 y = F₂ v z 
-                 x = F₁ u y
+                 v = f u
+                 y = G v z 
+                 x = F u y
                  in x
 
         cond' : (u : U)(z : Z) → α u (F' u z) ≤² γ (f' u) z
         cond' u z = let 
-                    v = f₁ u
-                    y = F₂ v z
+                    v = f u
+                    y = G v z
                     r1 = cond₁ u y       -- : α u (F₁ u (F₂ (f₁ u) z)) ≤² β (f₁ u) (F₂ (f₁ u) z)
                     r2 = cond₂ v z       -- : β (f₁ u) (F₂ (f₁ u) z) ≤² γ (f₂ (f₁ u)) z
                     in ≤-trans r1 r2
@@ -191,19 +192,22 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
                                                     (cond' u y)
 
     -- Two morphisms in Dial(Set)(2) are equal when "given the same maps f and F"
+
     eq-dial-maps : f ≡ g → F ≡ G → m₁ ≡ m₂
     eq-dial-maps p q = λ i → p i ∧ q i st eq-cond p q i
+
+    
     -- At what point is it easier to specifically define an equality of morphisms type instead of relying on _≡_ ?
 
 
 module DialCat where 
     open import Cubical.Foundations.Prelude using (refl)
     open DialSet-eq-maps using (eq-dial-maps)
-    open import CatLib using (PreCat)
-    open PreCat renaming (_∘_ to _∘ᶜ_)
+    open import CatLib using (Category)
+    open Category renaming (_∘_ to _∘ᶜ_)
 
     -- Show DialSet is a category
-    DialSetCat : {o : Level} → PreCat (lsuc o) (o) 
+    DialSetCat : {o : Level} → Category (lsuc o) (o) 
     DialSetCat .Ob      = DialSet 
     DialSetCat ._⇒_     = DialSetMap
     DialSetCat .id      = id-dial
@@ -225,8 +229,8 @@ _⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
 
 module TensorBiFunctor {ℓ : Level} where
     open DialCat using (DialSetCat)
-    open import CatLib using (PreCat)
-    open PreCat (DialSetCat {ℓ})
+    open import CatLib using (Category)
+    open Category (DialSetCat {ℓ})
     open CatLib.BiFunctor (DialSetCat {ℓ}) (DialSetCat {ℓ}) (DialSetCat {ℓ}) using (BiFunctorT)
     open BiFunctorT
     open DialSet-eq-maps using (eq-dial-maps)
@@ -267,8 +271,8 @@ module Mon {ℓ : Level} where
     open import Cubical.Foundations.Prelude using (refl; transp)
     open DialSet-eq-maps using (eq-dial-maps; eq-elem)
     open DialCat using (DialSetCat)
-    open import CatLib using (PreCat)
-    open PreCat (DialSetCat {ℓ})
+    open import CatLib using (Category)
+    open Category (DialSetCat {ℓ})
     open CatLib.Iso (DialSetCat {ℓ})
     open _≅_
 
@@ -292,7 +296,6 @@ module Mon {ℓ : Level} where
     DialCatMonoidal .unit = ⊗-unit
     DialCatMonoidal .unitorˡ {A} = prf 
         where 
-            open DialSet A
             prf : (⊗-unit ⊗₀ A) ≅ A
             prf .from = (λ{(tt , u) → u}) ∧ (λ{ (tt , u) x → tt , x}) st λ{ (tt , u) x → {!  !}}
             prf .to   = (λ{ u → tt , u}) ∧ (λ{ x (tt , u) → u}) st {!   !}
@@ -322,8 +325,8 @@ module Mon {ℓ : Level} where
 
 module InternalHomBiFunctor {ℓ : Level}  where 
     open DialCat using (DialSetCat)
-    open import CatLib using (PreCat)
-    open PreCat (DialSetCat {ℓ})
+    open import CatLib using (Category)
+    open Category (DialSetCat {ℓ})
     open CatLib.BiFunctor (DialSetCat {ℓ}) (DialSetCat {ℓ}) (DialSetCat {ℓ}) using (BiFunctorT)
     open BiFunctorT
     open DialSet-eq-maps using (eq-dial-maps)
@@ -411,4 +414,4 @@ _&_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
         assoc : (a b c : A) → (a ∙ b) ∙ c ≡ a ∙ (b ∙ c)
 -}
 --⟨ U × V , X x Y , alpha x beta ⟩ 
-  
+    

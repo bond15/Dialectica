@@ -25,23 +25,22 @@ module CatLib where
     is-set : ∀{ℓ} → Set ℓ → Set ℓ 
     is-set A = is-hlevel A 2
 
-    record PreCat (o h : Level) : Set (lsuc (o ⊔ h)) where 
+    record Category (o h : Level) : Set (lsuc (o ⊔ h)) where 
         field 
             Ob : Set o
             _⇒_ : Ob → Ob → Set h
-           -- Hom-set : (x y : Ob) → is-set (x ⇒ y) -- if p : x ≡ y, q : x ≡ y, then p ≡ q
             id : ∀ {x} → x ⇒ x
-            -- how to ensure this behaves correctly?
-            --_≣_ : ∀{A B}→ (f g : A ⇒ B) → Set h
             _∘_ : ∀{x y z} → y ⇒ z → x ⇒ y → x ⇒ z
 
             idr : ∀{x y}{f : x ⇒ y} → (f ∘ id) ≡ f 
             idl : ∀{x y}{f : x ⇒ y} → id ∘ f ≡ f
             assoc : ∀{w x y z} {f : y ⇒ z}{g : x ⇒ y}{h : w ⇒ x} → f ∘ (g ∘ h) ≡ (f ∘ g) ∘ h
+
+
         infixr 40 _∘_
 
-    module ObjectProduct{o ℓ : Level} (𝒞 : PreCat o ℓ) where
-        open PreCat 𝒞
+    module ObjectProduct{o ℓ : Level} (𝒞 : Category o ℓ) where
+        open Category 𝒞
 
         private 
             variable
@@ -88,9 +87,9 @@ module CatLib where
             
                 
 
-    module BinaryProducts {o h} (𝒞 : PreCat o h) where
+    module BinaryProducts {o h} (𝒞 : Category o h) where
         open ObjectProduct 𝒞
-        open PreCat 𝒞
+        open Category 𝒞
         open import Level using (levelOfTerm)
         private 
             variable
@@ -110,8 +109,8 @@ module CatLib where
             --_⁂_ : A ⇒ B → C ⇒ D → A × C ⇒ B × D
             --f ⁂ g = [ product ⇒ product ] f × g
 
-    module Terminal {o h} (𝒞 : PreCat o h) where
-        open PreCat 𝒞
+    module Terminal {o h} (𝒞 : Category o h) where
+        open Category 𝒞
         
         record IsTerminal(⊤ : Ob) : Set (o ⊔ h) where
             field
@@ -123,7 +122,7 @@ module CatLib where
                 ⊤ : Ob 
                 ⊤-is-terminal : IsTerminal ⊤
 
-    module Cartesian {o h} (𝒞 : PreCat o h) where 
+    module Cartesian {o h} (𝒞 : Category o h) where 
         open import Level using (levelOfTerm)
         open Terminal 𝒞 using (TerminalT)
         open BinaryProducts 𝒞 using (BinaryProductsT)
@@ -134,8 +133,8 @@ module CatLib where
                 products : BinaryProductsT
                 
 
-    module Equalizer {o ℓ} (𝒞 : PreCat o ℓ) where 
-        open PreCat 𝒞
+    module Equalizer {o ℓ} (𝒞 : Category o ℓ) where 
+        open Category 𝒞
 
         private 
             variable
@@ -155,8 +154,8 @@ module CatLib where
                 arr : obj ⇒ A 
                 isEqualizer : IsEqualizer arr f g
 
-    module Pullback {o ℓ}(𝒞 : PreCat o ℓ) where
-        open PreCat 𝒞 
+    module Pullback {o ℓ}(𝒞 : Category o ℓ) where
+        open Category 𝒞 
         private
             variable
                 A B X Y Z  : Ob
@@ -189,10 +188,10 @@ module CatLib where
         Product×Equalizer⇒Pullback : (p : Product A B) → EqualizerT (f ∘ Product.π₁ p) (g ∘ Product.π₂ p) → PullbackT f g
         Product×Equalizer⇒Pullback = {!   !}
 
-    module Finitely {o ℓ} (𝒞 : PreCat o ℓ) where 
+    module Finitely {o ℓ} (𝒞 : Category o ℓ) where 
         open import Level using (levelOfTerm)
 
-        open PreCat 𝒞 
+        open Category 𝒞 
         open BinaryProducts 𝒞 using (BinaryProductsT)
         open Cartesian 𝒞 using (CartesianT)
         open Equalizer 𝒞 using (EqualizerT)
@@ -206,11 +205,11 @@ module CatLib where
             pullback : ∀{X Y Z : Ob} → (f : X ⇒ Z) → (g : Y ⇒ Z) → PullbackT f g  
             pullback f g = Product×Equalizer⇒Pullback (BinaryProductsT.product (CartesianT.products cartesian)) (equalizer _ _)
 
-    module Functor {o ℓ}(𝒞 𝒟 : PreCat o ℓ) where
+    module Functor {o ℓ}(𝒞 𝒟 : Category o ℓ) where
         open import Level using (levelOfTerm)
 
-        open PreCat 𝒞 renaming (Ob to Obᶜ; _⇒_ to _⇒ᶜ_; id to idᶜ; _∘_ to _∘ᶜ_)
-        open PreCat 𝒟 renaming (Ob to Obᵈ; _⇒_ to _⇒ᵈ_; id to idᵈ; _∘_ to _∘ᵈ_)
+        open Category 𝒞 renaming (Ob to Obᶜ; _⇒_ to _⇒ᶜ_; id to idᶜ; _∘_ to _∘ᶜ_)
+        open Category 𝒟 renaming (Ob to Obᵈ; _⇒_ to _⇒ᵈ_; id to idᵈ; _∘_ to _∘ᵈ_)
 
         record FunctorT : Set (levelOfTerm 𝒞) where 
             field
@@ -222,12 +221,13 @@ module CatLib where
 
 
     -- covariant in both args
-    module BiFunctor {o ℓ}(𝒞 𝒟 ℬ : PreCat o ℓ) where
+
+    module BiFunctor {o ℓ}(𝒞 𝒟 ℬ : Category o ℓ) where
         open import Level using (levelOfTerm)
 
-        open PreCat ℬ renaming (Ob to Obᵇ; _⇒_ to _⇒ᵇ_; id to idᵇ; _∘_ to _∘ᵇ_)
-        open PreCat 𝒞 renaming (Ob to Obᶜ; _⇒_ to _⇒ᶜ_; id to idᶜ; _∘_ to _∘ᶜ_)
-        open PreCat 𝒟 renaming (Ob to Obᵈ; _⇒_ to _⇒ᵈ_; id to idᵈ; _∘_ to _∘ᵈ_)
+        open Category ℬ renaming (Ob to Obᵇ; _⇒_ to _⇒ᵇ_; id to idᵇ; _∘_ to _∘ᵇ_)
+        open Category 𝒞 renaming (Ob to Obᶜ; _⇒_ to _⇒ᶜ_; id to idᶜ; _∘_ to _∘ᶜ_)
+        open Category 𝒟 renaming (Ob to Obᵈ; _⇒_ to _⇒ᵈ_; id to idᵈ; _∘_ to _∘ᵈ_)
 
         record BiFunctorT : Set (levelOfTerm 𝒞) where 
             field
@@ -237,10 +237,10 @@ module CatLib where
                 Fid : {A : Obᵇ}{B : Obᶜ} → F₁ (idᵇ {A}) (idᶜ {B}) ≡ idᵈ { F₀ A B }
                 Fcomp : {A B C : Obᵇ}{f  : A ⇒ᵇ B}{g  : B ⇒ᵇ C}
                         {X Y Z : Obᶜ}{f' : X ⇒ᶜ Y}{g' : Y ⇒ᶜ Z}
-                 → F₁ (g ∘ᵇ f) (g' ∘ᶜ f') ≡ (F₁ g  g' ∘ᵈ F₁ f f')
+                    → F₁ (g ∘ᵇ f) (g' ∘ᶜ f') ≡ (F₁ g  g' ∘ᵈ F₁ f f')
 
-    module Iso{o ℓ} (𝒞 : PreCat o ℓ) where 
-        open PreCat 𝒞
+    module Iso{o ℓ} (𝒞 : Category o ℓ) where 
+        open Category 𝒞
 
         infix 4 _≅_
         record _≅_ (A B : Ob) : Set (ℓ ⊔ o) where
@@ -251,8 +251,8 @@ module CatLib where
                 isoʳ : from ∘ to ≡ id
 
 
-    module Commutation {o ℓ}(𝓒 : PreCat o ℓ) where
-        open PreCat 𝓒
+    module Commutation {o ℓ}(𝓒 : Category o ℓ) where
+        open Category 𝓒
 
         infix 1 [_⇒_]⟨_≡_⟩
         [_⇒_]⟨_≡_⟩ : ∀ (A B : Ob) → A ⇒ B → A ⇒ B → Set _
@@ -264,13 +264,13 @@ module CatLib where
 
         syntax connect B f g = f ⇒⟨ B ⟩ g
         
-    module Monoidal {o ℓ}(𝒞 : PreCat o ℓ) where
+    module Monoidal {o ℓ}(𝒞 : Category o ℓ) where
         open import Level using (levelOfTerm)
         open BiFunctor using (BiFunctorT)
         open Iso 𝒞 
         open _≅_
 
-        open PreCat 𝒞
+        open Category 𝒞
         open Commutation 𝒞
         
         record MonoidalT : Set (levelOfTerm 𝒞) where 
