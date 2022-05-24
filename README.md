@@ -1,3 +1,5 @@
+NOTE: Transitioning work to here https://github.com/vcvpaiva/Dialectica
+
 # Dialectica
 
 2022 AMS MRC on Applied Category Theory
