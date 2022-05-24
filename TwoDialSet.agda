@@ -1,4 +1,4 @@
-module DialSets where 
+module TwoDialSet where 
 open import Level renaming (zero to lzero; suc to lsuc)
 open import Agda.Builtin.Sigma 
 open import Data.Product
