@@ -1,4 +1,4 @@
- -- proposing to rename this LDialSet for Linear Dialectica over Sets or lineale-based dialectica
+-- proposing to rename this LDialSet for Linear Dialectica over Sets or lineale-based dialectica
 module LDialSet where 
 open import Agda.Primitive
 open import Data.Product
