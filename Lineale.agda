@@ -29,8 +29,8 @@ record MonProset {ℓ : Level}(P : Set ℓ){{ _ : Proset P}} : Set (lsuc ℓ) wh
    left-ident : ∀{a : P} → unit ⊙ a ≡ a
    right-ident : ∀{a : P} → a ⊙ unit ≡ a
 
-   compatʳ : ∀{a b : P} → rel a b → (∀{c : P} → (rel (a ⊙ c) (b ⊙ c)))
-   compatˡ : ∀{a b : P} → rel a b → (∀{c : P} → (rel (c ⊙ a) (c ⊙ b)))
+   symm : ∀{a b : P} → a ⊙ b ≡ b ⊙ a
+   compat : ∀{a b : P} → rel a b → (∀{c : P} → (rel (a ⊙ c) (b ⊙ c)))
 open MonProset {{...}}
 
 record Lineale {ℓ : Level} (L : Set ℓ) {{ _ : Proset L }} {{ _ : MonProset L}}: Set (lsuc ℓ) where
@@ -43,16 +43,12 @@ record Lineale {ℓ : Level} (L : Set ℓ) {{ _ : Proset L }} {{ _ : MonProset L
         adj : {a b y : L} → rel (a ⊙ y) b → rel y (a ⊸ b)
 open Lineale {{...}}
 
-
--- TODO: Helper lemmas
-
-{- 
+-- random examples
 module _ {ℓ}{L : Set ℓ} 
   {{ _ : Proset L}}
   {{ _ : MonProset L }}
   {{ _ : Lineale L }} where 
 
-{-
   lemma₁ : ∀{a b c : L} → c ⊙ b ⊙ a ≡ a ⊙ b ⊙ c 
   lemma₁ {a} {b} {c} = c ⊙ b ⊙ a ≡⟨ sym assoc ⟩ 
                        c ⊙ (b ⊙ a) ≡⟨ symm ⟩ 
@@ -61,12 +57,9 @@ module _ {ℓ}{L : Set ℓ}
 
   ex : ∀(a b c x : L) → rel(c ⊙ b ⊙ a) x ≡ rel (a ⊙ b ⊙ c) x
   ex a b c x = cong₂ rel lemma₁ refl 
--} 
 
-
-
-  --ex₂ : ∀{a b c : L} → rel(( a ⊸ b) ⊙ a) b ≡ rel (a ⊙ (a ⊸ b)) b
-  --ex₂  = cong₂ rel symm refl
+  ex₂ : ∀{a b c : L} → rel(( a ⊸ b) ⊙ a) b ≡ rel (a ⊙ (a ⊸ b)) b
+  ex₂  = cong₂ rel symm refl
 
   --relassocl : ∀{a b c : L} → rel (a ⊙ (b ⊙ c)) ((a ⊙ b) ⊙ c)
   --relassocl = transport (cong₂ rel (sym assoc) refl) prefl
@@ -80,7 +73,6 @@ module _ {ℓ}{L : Set ℓ}
   relassocl' : ∀{a b c x : L} → rel ((a ⊙ b) ⊙ c) x → rel (a ⊙ (b ⊙ c)) x 
   relassocl' = transport (cong₂ rel (sym assoc) refl)
 
-{-
   relsyml : ∀{a b c : L} → rel (a ⊙ b) c → rel (b ⊙ a) c
   relsyml t = transport (cong₂ rel symm refl) t
 
@@ -113,5 +105,5 @@ module _ {ℓ}{L : Set ℓ}
   ex₄ : ∀{a b c d x : L} → rel (c ⊙ a ⊙ unit ⊙ d ⊙ b) x → rel a (d ⊸ (c ⊸ (b ⊸ x)))
   ex₄ t = let aUNITd|c⊸b⊸x = adj (relassocl' (relassocl' (adj (relsyml t))))
           in adj (relidl (relassocl' (relsyml aUNITd|c⊸b⊸x)))
--}
- -}
+
+ 

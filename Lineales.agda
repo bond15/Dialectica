@@ -71,21 +71,13 @@ module Two where
     symm' {⊥} {⊤} = refl
     symm' {⊥} {⊥} = refl
 
-    compatˡ' : {a b : Two} → a ≤² b → ({c : Two} → (c ⊗² a) ≤² (c ⊗² b))
-    compatˡ'  {⊤} {⊤} p {⊤} = tt
-    compatˡ'  {⊤} {⊤} p {⊥} = tt
-    compatˡ'  {⊥} {⊤} p {⊤} = tt
-    compatˡ'  {⊥} {⊤} p {⊥} = tt
-    compatˡ'  {⊥} {⊥} p {⊤} = tt
-    compatˡ'  {⊥} {⊥} p {⊥} = tt
-
-    compatʳ' : {a b : Two} → a ≤² b → ({c : Two} → (a ⊗² c) ≤² (b ⊗² c))
-    compatʳ'  {⊤} {⊤} p {⊤} = tt
-    compatʳ'  {⊤} {⊤} p {⊥} = tt
-    compatʳ'  {⊥} {⊤} p {⊤} = tt
-    compatʳ'  {⊥} {⊤} p {⊥} = tt
-    compatʳ'  {⊥} {⊥} p {⊤} = tt
-    compatʳ'  {⊥} {⊥} p {⊥} = tt
+    compat' : {a b : Two} → a ≤² b → ({c : Two} → (a ⊗² c) ≤² (b ⊗² c))
+    compat' {⊤} {⊤} p {⊤} = tt
+    compat' {⊤} {⊤} p {⊥} = tt
+    compat' {⊥} {⊤} p {⊤} = tt
+    compat' {⊥} {⊤} p {⊥} = tt
+    compat' {⊥} {⊥} p {⊤} = tt
+    compat' {⊥} {⊥} p {⊥} = tt
 
     instance 
         two-pro : Proset Two 
@@ -99,8 +91,8 @@ module Two where
         two-mon .assoc = assoc'
         two-mon .left-ident = lunity
         two-mon .right-ident = runity
-        two-mon .compatˡ = compatˡ' 
-        two-mon .compatʳ = compatʳ' 
+        two-mon .symm = symm'
+        two-mon .compat = compat'
 
         two-lineale : Lineale Two 
         two-lineale ._⊸_ = _⊸²_
