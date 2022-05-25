@@ -1,4 +1,4 @@
 name: dial
-include: .
+include: . ./CategoryLibrary ./Lineales ./DialSet ./Event Structures ./LDialSet ./Poly ./Petri Nets
 depend: cubical standard-library 
 flags: --cubical
