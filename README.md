@@ -7,8 +7,10 @@ NOTE: Work is primarily done on this fork https://github.com/vcvpaiva/Dialectica
 1. basic categories
 
 2. DialSet.agda = chapters 1 and 2 of https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-213.pdf over Set.
-This exists in two different kinds: 
+This exists in two different styles:
+
 A. objects as subsets of U \times X  (we want to have the code, but will not do much with it to begin with) OR
+
 B. objects as maps into Two, U\times X--> Two, which we will work on to begin with (thinking of L, but workign with Two)
 These two kinds are equivalent in the category Set.
 (later DialC, C any finite limit, CCC cat)
@@ -36,7 +38,7 @@ Dialectica Petri Nets https://arxiv.org/abs/2105.12801
 
 Lineales https://drive.google.com/file/d/1Xk-2LKABGNfnYTf9CGV6lkhWBUHpGT9m/view?usp=sharing
 
-Winskel's Dialectica games
+Winskel's Dialectica games in "Making Concurrency Functional", https://arxiv.org/abs/2202.13910
 
 
 ## Sources
