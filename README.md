@@ -1,3 +1,5 @@
+NOTE: Work is primarily done on this fork https://github.com/vcvpaiva/Dialectica
+
 # Dialectica
 
 2022 AMS MRC on Applied Category Theory
@@ -29,12 +31,12 @@ Note the simplified morphisms, but much more complicated tensor products.
 
 
 # References
+
 Dialectica Petri Nets https://arxiv.org/abs/2105.12801
 
 Lineales https://drive.google.com/file/d/1Xk-2LKABGNfnYTf9CGV6lkhWBUHpGT9m/view?usp=sharing
 
 Winskel's Dialectica games
-
 
 
 ## Sources

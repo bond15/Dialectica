@@ -1,10 +1,10 @@
 module DC where 
 open import Agda.Primitive using (Level; _⊔_)
-open import CatLib using (PreCat;module Finitely; module BinaryProducts; module Cartesian; module Pullback; module ObjectProduct)
+open import CatLib using (Category;module Finitely; module BinaryProducts; module Cartesian; module Pullback; module ObjectProduct)
 open import Cubical.Core.Everything using (_≡_)
 
-module _ {o ℓ : Level}(𝒞 : PreCat o ℓ)where 
-    open PreCat 𝒞
+module _ {o ℓ : Level}(𝒞 : Category o ℓ)where 
+    open Category 𝒞
     open Finitely 𝒞 using (FinitelyComplete)
     module foo {fin : FinitelyComplete} where 
         open FinitelyComplete fin using (cartesian; pullback)
@@ -109,10 +109,10 @@ module _ {o ℓ : Level}(𝒞 : PreCat o ℓ)where
 
     
         -- now try to make a category out of this...
-        DC : PreCat (o ⊔ ℓ) (o ⊔ ℓ) 
+
+        DC : Category (o ⊔ ℓ) (o ⊔ ℓ) 
         DC .Ob = Obj
         DC ._⇒_ = Hom 
-        DC .Hom-set = {!   !}
         DC .id = {!   !} 
         DC ._∘_ = {!   !}
         DC .idr = {!   !}
@@ -126,4 +126,4 @@ module _ {o ℓ : Level}(𝒞 : PreCat o ℓ)where
         
 
     
-  
+
