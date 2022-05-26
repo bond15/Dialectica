@@ -1,4 +1,4 @@
 name: dial
-include: .
+include: . ./Lineales
 depend: cubical standard-library 
 flags: --cubical
