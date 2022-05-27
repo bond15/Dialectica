@@ -70,7 +70,7 @@ bifun {b = b} {c = c} aRc bRd = let abRcb = compat aRc {b}
         adapt `pos` and `dir` naming convention
 
         -- Objects
-        -- in Dial objects are normally A = (U,X, alpha), B = (V, Y, beta)
+        -- in Dial objects are normally A = (pos,X, alpha), B = (dir, Y, beta)
         -- rewriting  A as (pos A, dir A, alpha) to highlight similarity to Poly (pos=positions, dir=directions)
 
         record DialSet {ℓ : Level} : Set (lsuc ℓ) where
@@ -96,21 +96,21 @@ bifun {b = b} {c = c} aRc bRd = let abRcb = compat aRc {b}
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
     field
-        U : Set ℓ 
-        X : Set ℓ
-        α : U → X → Two  
+        pos : Set ℓ 
+        dir : Set ℓ
+        α : pos → dir → Two  
 
 -- morphisms
 record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where 
     constructor _∧_st_
     open DialSet A 
-    open DialSet B renaming (U to V ; X to Y ; α to β )
-    -- ^ this brings U X α of object A := (U, X, α) in scope
-    -- it also bring V Y β of object B := (V, Y, β) in scope
+    open DialSet B renaming (pos to pos' ; dir to dir' ; α to β )
+    -- ^ this brings pos  dir  α of object A := (pos , dir , α) in scope
+    -- it also bring pos' dir' β of object B := (pos', dir', β) in scope
     field 
-        f : U → V
-        F : U → Y → X 
-        cond-on-f&F : (u : U)(y : Y) → α u (F u y) ≤² β (f u) y
+        f : pos → pos'
+        F : pos → dir' → dir
+        cond-on-f&F : (p : pos)(d' : dir') → α p (F p d') ≤² β (f p) d'
 
 -- syntax for morphism
 _⇒ᴰ_ : {o : Level} → DialSet {o} → DialSet {o} → Set o
@@ -121,28 +121,28 @@ id-dial = (λ u → u) ∧ (λ u x → x) st (λ u x → ≤-refl)
 
 {- 
 composition of morphisms 
-A := (U, X, α)
-B := (V, Y, β)
+A := (pos, X, α)
+B := (dir, Y, β)
 C := (W, Z, γ)
 -}
 _∘ᴰ_ : {o : Level}{A B C : DialSet {o}} → (B ⇒ᴰ C) → (A ⇒ᴰ B) → (A ⇒ᴰ C)
 _∘ᴰ_ {o} {A} {B} {C} (g ∧ G st cond₂) (f ∧ F st cond₁) = f' ∧ F' st cond'
     where 
-        open DialSet A 
-        open DialSet B renaming (U to V ; X to Y; α to β)
-        open DialSet C renaming (U to W ; X to Z; α to γ)
+        open DialSet A renaming (pos to pos₁ ; dir to dir₁)
+        open DialSet B renaming (pos to pos₂ ; dir to dir₂; α to β)
+        open DialSet C renaming (pos to pos₃ ; dir to dir₃; α to γ)
 
-        f' : U → W 
+        f' : pos₁ → pos₃
         f' = g ∘ f
 
-        F' : U → Z → X
+        F' : pos₁ → dir₃ → dir₁
         F' u z = let 
                  v = f u
                  y = G v z 
                  x = F u y
                  in x
 
-        cond' : (u : U)(z : Z) → α u (F' u z) ≤² γ (f' u) z
+        cond' : (u : pos₁)(z : dir₃) → α u (F' u z) ≤² γ (f' u) z
         cond' u z = let 
                     v = f u
                     y = G v z
@@ -155,7 +155,7 @@ _∘ᴰ_ {o} {A} {B} {C} (g ∧ G st cond₂) (f ∧ F st cond₁) = f' ∧ F' s
 -- defining equality of DialSet morphisms
 module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} where 
     open DialSet A 
-    open DialSet B renaming (U to V ; X to Y; α to β)
+    open DialSet B renaming (pos to pos' ; dir to dir'; α to β)
 
     open DialSetMap m₁ renaming (cond-on-f&F to cond)
     open DialSetMap m₂ renaming (f to g ; F to G; cond-on-f&F to cond')
@@ -211,7 +211,7 @@ module DialSet-eq-maps {o : Level} {A B : DialSet{o}} {m₁ m₂ : A ⇒ᴰ B} w
         -- given p and q
         (p : f ≡ g)(q : F ≡ G) → 
         -- in Type
-        (λ i → (u : U)(y : Y) → α u ((q i) u y) ≤² β ((p i) u) y) 
+        (λ i → (u : pos)(y : dir') → α u ((q i) u y) ≤² β ((p i) u) y) 
         -- cond and cond' are equal
         [ cond ≡ cond' ]
     eq-cond p q = funExt λ u → funExt λ y → eq-elem (cong₂ α refl (funExt⁻ (funExt⁻ (λ i y u → q i u y) y) u))
@@ -260,18 +260,18 @@ Define monoidal tensors in Dial Set
 
 -- cartesian product
 -- Poly notation: Ayᴮ × Cyᴰ = ACyᴮ⁺ᴰ
--- DialSet notation (U×V, X+Y, choose (alpha, beta))
+-- DialSet notation (pos×dir, X+Y, choose (alpha, beta))
 
 _×_ : DialSet → DialSet → DialSet
-A × B = record { U × V; X + Y ; λ {(x,0) → u alpha x |
+A × B = record { pos × dir; X + Y ; λ {(x,0) → u alpha x |
                                    (y,1) → v beta y } }
 
 -- must show _×_ is a bifunctor,  so if (f,F):A → C, and (g,G):B → C, then A×B → C×D 
 -- must show T = (1, 0, empty) is the unit for this cartesian product, 1×0 → Two has to be the empty relation
 -- must show A×T=T×A=A
 _&_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
-⟨ U , X , α ⟩ & ⟨ V , Y , β ⟩ = ⟨ U × V , X ⊎ Y , choose ⟩
-    where choose : U × V → X ⊎ Y → Two 
+⟨ pos , X , α ⟩ & ⟨ dir , Y , β ⟩ = ⟨ pos × dir , X ⊎ Y , choose ⟩
+    where choose : pos × dir → X ⊎ Y → Two 
           choose (u , v) (inj₁ x) = α u x 
           choose (u , v) (inj₂ y) = β v y
 
@@ -281,7 +281,7 @@ _&_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
 -- Ayᴮ × Cyᴰ = ACyᴮᴰ
 
 _⊗_ : DialSet → DialSet → DialSet
-A ⊗ B = record {  U × V; X × Y; λ (u,v,x,y) → (u alpha x)⊗² (v beta y)   }
+A ⊗ B = record {  pos × dir; X × Y; λ (u,v,x,y) → (u alpha x)⊗² (v beta y)   }
 
 
 
@@ -317,8 +317,8 @@ open DialSet[_,_]
 -}
 
 _⊗ᴰ_ : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ} 
-⟨ U , X , α ⟩ ⊗ᴰ ⟨ V , Y , β ⟩ = ⟨ U × V , X × Y , m ⟩ 
-    where m : U × V  → X × Y → Two
+⟨ pos₁ , dir₁ , α ⟩ ⊗ᴰ ⟨ pos₂ , dir₂ , β ⟩ = ⟨ pos₁ × pos₂ , dir₁ × dir₂ , m ⟩ 
+    where m : pos₁ × pos₂ → dir₁ × dir₂ → Two
           m (u , v) (x , y) =  α u x ⊗² β v y 
 
 module TensorBiFunctor {ℓ : Level} where
@@ -332,28 +332,30 @@ module TensorBiFunctor {ℓ : Level} where
 
     tensor : BiFunctorT 
     tensor .F₀ = _⊗ᴰ_
-    tensor .F₁ {A} {A'} {B} {B'} m₁ m₂ = fmap
+    tensor .F₁ {A} {B} {C} {D} m₁ m₂ = fmap
+        -- m1 : A -> B
+        -- m2 : C -> D
         where 
-            open DialSet A                                                      -- A  := ⟨ U  , X  , α  ⟩ 
-            open DialSet A' renaming (U to U' ; X to X'; α to α')               -- A' := ⟨ U' , X' , α' ⟩ 
-            open DialSet B  renaming (U to V  ; X to Y ; α to β )               -- B  := ⟨ V  , Y  , β  ⟩ 
-            open DialSet B' renaming (U to V' ; X to Y'; α to β')               -- B' := ⟨ V' , Y' , β' ⟩ 
+            open DialSet A  renaming (pos to posA; dir to dirA)                 -- A := ⟨ posA , dirA , α  ⟩ 
+            open DialSet B  renaming (pos to posB; dir to dirB; α to α')        -- B := ⟨ posB , dirB , α' ⟩ 
+            open DialSet C  renaming (pos to posC; dir to dirC; α to β )        -- C := ⟨ posC , dirC , β  ⟩ 
+            open DialSet D  renaming (pos to posD; dir to dirD; α to β')        -- D := ⟨ posD , dirD , β' ⟩ 
             open DialSetMap m₁ renaming (cond-on-f&F to cond)                   -- m₁ := f ∧ F st cond
             open DialSetMap m₂ renaming (f to g; F to G; cond-on-f&F to cond')  -- m₂ := g ∧ G st cond'
             
-            tensor-f : (U × V) → (U' × V')
+            tensor-f : (posA × posC) → (posB × posD)
             tensor-f (u , v) = (f u) , (g v)
 
-            tensor-F : U × V → X' × Y' → X × Y
+            tensor-F : posA × posC → dirB × dirD → dirA × dirC
             tensor-F (u , v) (x' , y') = (F u x') , (G v y')
 
-            tensor-cond : (uv : U × V)(x'y' : X' × Y') → 
+            tensor-cond : (uv : posA × posC)(x'y' : dirB × dirD) → 
                 (α (fst uv) (F (fst uv) (fst x'y')) ⊗² β (snd uv) (G (snd uv) (snd x'y'))) 
                     ≤² 
                 (α' (f (fst uv)) (fst x'y') ⊗² β' (g (snd uv)) (snd x'y'))
             tensor-cond (u , v) (x' , y') = bifun (cond u x') (cond' v y')
 
-            fmap : (A ⊗ᴰ B) ⇒ (A' ⊗ᴰ B')
+            fmap : (A ⊗ᴰ C) ⇒ (B ⊗ᴰ D)
             fmap = tensor-f ∧ tensor-F st tensor-cond
 
     tensor .Fid   = eq-dial-maps refl refl
@@ -413,8 +415,8 @@ module Mon {ℓ : Level} where
 
 
 [_,_] : {ℓ : Level} → DialSet {ℓ} → DialSet {ℓ} → DialSet {ℓ}
-[ ⟨ U , X , α ⟩ , ⟨ V , Y , β ⟩ ] = ⟨ (U → V) × (U × Y → X) , U × Y , m ⟩ 
-    where m : (U → V) × ((U × Y → X)) → U × Y → Two 
+[ ⟨ pos , dir , α ⟩ , ⟨ pos' , dir' , β ⟩ ] = ⟨ (pos → pos') × (pos × dir' → dir) , pos × dir' , m ⟩ 
+    where m : (pos → pos') × ((pos × dir' → dir)) → pos × dir' → Two 
           m (uv , uyx) (u , y) = α u (uyx (u , y)) ⊗² β (uv u) y
 
 module InternalHomBiFunctor {ℓ : Level}  where 
@@ -428,18 +430,18 @@ module InternalHomBiFunctor {ℓ : Level}  where
 
     int-hom : BiFunctorT
     int-hom .F₀     = [_,_]
-    int-hom .F₁ {A} {A'} {B} {B'} m₁ m₂ = fmap
+    int-hom .F₁ {A} {B} {C} {D} m₁ m₂ = fmap
         where 
             int-f : {!   !}
             int-f = {!   !}
-
+            
             int-F : {!   !}
             int-F = {!   !}
 
             int-cond : {!   !}
             int-cond = {!   !}
 
-            fmap : [ A , B ] ⇒ [ A' , B' ]
+            fmap : [ A , C ] ⇒ [ B , D ]
             fmap = int-f ∧ int-F st int-cond
     int-hom .Fid    = {!   !}
     int-hom .Fcomp  = {!   !}

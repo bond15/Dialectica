@@ -232,9 +232,9 @@ module CatLib where
         record BiFunctorT : Set (levelOfTerm 𝒞) where 
             field
                 F₀ : Obᵇ → Obᶜ → Obᵈ
-                F₁ : {A A' : Obᵇ}{B B' : Obᶜ} → (f : A ⇒ᵇ A')(g : B ⇒ᶜ B') → F₀ A B ⇒ᵈ F₀ A' B'
+                F₁ : {A B : Obᵇ}{C D : Obᶜ} → (f : A ⇒ᵇ B)(g : C ⇒ᶜ D) → F₀ A C ⇒ᵈ F₀ B D
 
-                Fid : {A : Obᵇ}{B : Obᶜ} → F₁ (idᵇ {A}) (idᶜ {B}) ≡ idᵈ { F₀ A B }
+                Fid : {A : Obᵇ}{C : Obᶜ} → F₁ (idᵇ {A}) (idᶜ {C}) ≡ idᵈ { F₀ A C }
                 Fcomp : {A B C : Obᵇ}{f  : A ⇒ᵇ B}{g  : B ⇒ᵇ C}
                         {X Y Z : Obᶜ}{f' : X ⇒ᶜ Y}{g' : Y ⇒ᶜ Z}
                     → F₁ (g ∘ᵇ f) (g' ∘ᶜ f') ≡ (F₁ g  g' ∘ᵈ F₁ f f')
