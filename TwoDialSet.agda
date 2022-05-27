@@ -93,12 +93,26 @@ bifun {b = b} {c = c} aRc bRd = let abRcb = compat aRc {b}
                 F : pos A → dir B → dir A 
                 cond-on-f&F : (u : pos A)(y : dir B) → α u (F u y) ≤² β (f u) y
         -}
+-- "non dependent poly with a relation"?
 record DialSet {ℓ : Level} : Set (lsuc ℓ) where
     constructor ⟨_,_,_⟩
     field
         pos : Set ℓ 
         dir : Set ℓ
         α : pos → dir → Two  
+{-
+-- Poly is "dependent Dialectica without a relation"?
+record Poly {ℓ : Level} : Set (lsuc ℓ) where 
+    field 
+        pos : Set ℓ
+        dir : pos → Set ℓ
+-- so what is ..? Dependent Dialectica with a relation?
+record LDepDialSet {ℓ : Level}{ L : Set ℓ}{{ _ : Lineale L}} : Set (lsuc ℓ) where 
+    field 
+        pos : Set ℓ
+        dir : pos → Set ℓ
+        α : (p : pos) → dir p → L
+-}
 
 -- morphisms
 record DialSetMap {ℓ} (A B : DialSet {ℓ}) : Set ℓ where 
