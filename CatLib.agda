@@ -319,3 +319,42 @@ module CatLib where
                                                 ≡ 
                                                     α⇒ ⇒⟨ ((X ⊗₀ Y) ⊗₀ Z ⊗₀ W) ⟩ 
                                                     α⇒ ⟩
+    module NaturalTransformation where 
+        open Functor
+        record NaturalTransformation {o ℓ : Level}{C : Category o ℓ}
+                             {D : Category o ℓ}
+                             (F G : FunctorT C D) : Set (o ⊔ ℓ ) where
+            eta-equality
+            private
+                module F = FunctorT F
+                module G = FunctorT G
+            open F using (F₀; F₁)
+            open Category D 
+
+            field
+                η           : {!   !} --∀ X → D [ F₀ X , G.F₀ X ]
+                commute     : {!   !} --∀ {X Y} (f : C [ X , Y ]) → η Y ∘ F₁ f ≈ G.F₁ f ∘ η X
+    module Adjoint where 
+        open import Level using (levelOfTerm)
+        open import Categories.NaturalTransformation 
+        _ : NaturalTransformation {!   !} {!   !} 
+        _ = {!   !}
+{-        open Functor
+        record AdjointT {C D : Category}(L : FunctorT C D) (R : FunctorT D C) : Set (levelOfTerm L ⊔ levelOfTerm R) where
+            private
+                module C = Category C
+                module D = Category D
+                module L = Functor L
+                module R = Functor R
+
+            field
+                unit   : NaturalTransformation idF (R ∘F L)
+                counit : NaturalTransformation (L ∘F R) idF
+
+            module unit = NaturalTransformation unit
+            module counit = NaturalTransformation counit
+
+            field
+                zig : ∀ {A : C.Obj} → counit.η (L.F₀ A) D.∘ L.F₁ (unit.η A) D.≈ D.id
+                zag : ∀ {B : D.Obj} → R.F₁ (counit.η B) C.∘ unit.η (R.F₀ B) C.≈ C.id
+                    -}

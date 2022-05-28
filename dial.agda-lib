@@ -1,4 +1,4 @@
 name: dial
 include: . ./Lineales ./Poly
-depend: cubical standard-library 
+depend: cubical standard-library agda-categories
 flags: --cubical
