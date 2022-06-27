@@ -2,35 +2,36 @@ module LDDialSet where
 open import Level renaming (zero to lzero; suc to lsuc)
 open import Data.Product
 open import Function using (_∘_)
-
-record LDepDialSet {ℓ : Level}{L : Set ℓ} : Set (lsuc ℓ) where 
-    field 
-        pos : Set ℓ
-        dir : pos → Set ℓ
-        α : (p : pos) → dir p → L
-
 open import Lineale
-record LDepDialSetMap {ℓ}{L} (A B : LDepDialSet{ℓ}{L})
-        {{pl : Proset L}}
-        {{_ : MonProset L}}
-        {{_ : Lineale L}}: Set ℓ where 
 
-    open Proset pl renaming (rel to _≤_)
-    open LDepDialSet A 
-    open LDepDialSet B renaming (pos to pos'; dir to dir'; α to β)
-    field 
-        f : pos → pos' 
-        F : (p : pos) → (dir' (f p)) → dir p
-        cond : (p : pos)(d' : dir' (f p)) → α p (F p d') ≤ β  (f p) d'
-
-module _ {ℓ : Level}{L : Set ℓ}
+module LD {ℓ : Level}{L : Set ℓ}
         {{pl : Proset L}}
         {{mp : MonProset L}}
-        {{_ : Lineale L}} where 
+        {{lin : Lineale L}} where 
+
+    record LDepDialSet : Set (lsuc ℓ) where 
+        constructor ⟨_,_,_⟩
+        field 
+            pos : Set ℓ
+            dir : pos → Set ℓ
+            α : (p : pos) → dir p → L
+
+    open import Lineale
+    record LDepDialSetMap (A B : LDepDialSet) : Set ℓ where 
+        constructor _∧_st_
+        open Proset pl renaming (rel to _≤_)
+        open LDepDialSet A 
+        open LDepDialSet B renaming (pos to pos'; dir to dir'; α to β)
+        field 
+            f : pos → pos' 
+            F : (p : pos) → (dir' (f p)) → dir p
+            cond : (p : pos)(d' : dir' (f p)) → α p (F p d') ≤ β  (f p) d'
+
+
         
     open MonProset mp
 
-    _⊗_ : LDepDialSet {ℓ}{L} → LDepDialSet {ℓ}{L} → LDepDialSet {ℓ} {L}
+    _⊗_ : LDepDialSet → LDepDialSet → LDepDialSet 
     record { pos = pos ; dir = dir ; α = α } ⊗ record { pos = pos' ; dir = dir' ; α = β } = 
         record { pos = pos × pos' ; dir = λ{(p , p') → dir p × dir' p'} ; α = λ{ (p , p') (d , d') → α p d ⊙ β p' d' }}
     --⟨ pos₁ , dir₁ , α ⟩ ⊗ ⟨ pos₂ , dir₂ , β ⟩ = ⟨ pos₁ × pos₂ , dir₁ × dir₂ , m ⟩ 
@@ -38,10 +39,10 @@ module _ {ℓ : Level}{L : Set ℓ}
      --         m (u , v) (x , y) =  α u x ⊗² β v y 
 
 
-    _⇒L_ : (A B : LDepDialSet{ℓ}{L}) → Set ℓ
+    _⇒L_ : (A B : LDepDialSet) → Set ℓ
     _⇒L_ A B  = LDepDialSetMap A B
     
-    _∘L_ : {A B C : LDepDialSet {ℓ} {L}} → (B ⇒L C) → (A ⇒L B) → (A ⇒L C)
+    _∘L_ : {A B C : LDepDialSet} → (B ⇒L C) → (A ⇒L B) → (A ⇒L C)
     _∘L_ {A} {B} {C} record { f = g ; F = G ; cond = cond₁ } record { f = f ; F = F ; cond = cond₂ } = thing
         where 
             open LDepDialSet A renaming (pos to pos₁; dir to dir₁) 
