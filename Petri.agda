@@ -91,11 +91,11 @@ module DMLSet
             
 
 
-    
+
     module NetL where 
         NetL : Category (ℓ-suc o) {!   !} 
         NetL .Ob = LDepDialSet × LDepDialSet
-        NetL ._⇒_ A B = {! (A ⇒L B) × (A ⇒L B) !}
+        (NetL ⇒ (A , A')) (B , B') = {!   !}
         NetL .id = {!   !}
         NetL ._∘_ = {!   !}
         NetL .idr = {!   !}
