@@ -84,7 +84,18 @@ module CatLib where
 
 
 
-            
+    module ProductCat  where 
+        open Category
+        open import Data.Product
+        open import Function hiding (id; _∘_)
+        Product : {o o' h h' : Level} → Category o h → Category o' h' → Category (o ⊔ o') (h ⊔ h')
+        Product C D .Ob = C .Ob × D .Ob
+        (Product C D ⇒ (C₁ , D₁)) (C₂ , D₂) = (C ._⇒_) C₁ C₂ × (D ._⇒_) D₁ D₂
+        Product C D .id = (C .id) , (D .id)
+        Product C D ._∘_ = zip (C ._∘_) (D ._∘_)
+        Product C D .idr {f = f , g} = λ i → ((C .idr {f = f}) i) , D .idr {f = g} i
+        Product C D .idl {f = f , g} = λ i → C .idl {f = f} i , D .idl {f = g} i 
+        Product C D .assoc {f = f₁ , f₂} {g₁ , g₂} {h₁ , h₂} = λ i → C .assoc {f = f₁}{g₁}{h₁} i , D .assoc {f = f₂}{g₂}{h₂} i
                 
 
     module BinaryProducts {o h} (𝒞 : Category o h) where
@@ -357,4 +368,4 @@ module CatLib where
             field
                 zig : ∀ {A : C.Obj} → counit.η (L.F₀ A) D.∘ L.F₁ (unit.η A) D.≈ D.id
                 zag : ∀ {B : D.Obj} → R.F₁ (counit.η B) C.∘ unit.η (R.F₀ B) C.≈ C.id
-                    -}
+                    -} 

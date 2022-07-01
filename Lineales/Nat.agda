@@ -13,6 +13,11 @@ open Lineale.Proset {{...}}
 open Lineale.MonProset {{...}}
 open Lineale.Lineale {{...}}
 
+_-_ : ℕ → ℕ → ℕ 
+zero - m = zero
+suc n - zero = suc n
+suc n - suc m = n - m
+
 instance
     ℕ-Proset : Proset ℕ
     ℕ-Proset .rel = _≤_
@@ -38,6 +43,14 @@ instance
                 (s≤s (subst2 ((λ x y → x ≤ y)) (+-comm a c) (+-comm b c) (prf lt)))
 
     ℕ-Lineale : Lineale ℕ 
-    ℕ-Lineale ._⊸_ = {!   !}
-    ℕ-Lineale .rlcomp = {!   !}
+    ℕ-Lineale ._⊸_  x y = y - x
+    ℕ-Lineale .rlcomp {a} {b} = {!   !}
+        where 
+            prf : (a b : ℕ) → a + (b - a) ≤ b
+            prf zero zero = ≤-refl
+            prf zero (suc y) = ≤-refl
+            prf (suc x) zero = {!  suc x + (zero - suc x) ≤ zero !}
+            prf (suc x) (suc y) = {!   !}
+ 
+
     ℕ-Lineale .adj = {!   !}
