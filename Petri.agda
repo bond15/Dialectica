@@ -111,6 +111,254 @@ module DMLSet
 
         -- examples
 
+
+module subtyping where
+    open import Data.Bool
+    open import Data.Empty
+    open import Data.List
+    open import Data.Nat
+    open import Data.Unit
+
+    -- decidable equality
+    record Dec (T : Set) : Set where
+        constructor MkDec 
+        field 
+            eqb : T → T → Bool 
+    open Dec{{...}}
+
+    _∈_ : {T : Set}{{ _ : Dec T}} → (t : T) → (xs : List T) → Set
+    _∈_ t [] = ⊥
+    _∈_ t (x ∷ xs) with eqb t x
+    ...             | true  = ⊤
+    ...             | false = t ∈ xs
+        
+    -- A subset of a type with decidable equality
+    sub : {T : Set}{{_ : Dec T}} → List T → Set 
+    sub {T} xs = Σ[ t ∈ T ] (t ∈ xs)
+
+module examples where
+    open import Data.Nat
+    open import Data.Bool
+    open import Data.List
+    open subtyping
+
+    open import Nat -- the Lineale on ℕ
+    open DMLSet {L = ℕ} -- the Category Dependent Dialectical on ℕ
+    open Category NetL.NetL renaming (Ob to Net) -- The Petri net Category based on DMLSet ℕ
+    open import LDDialSet
+    open LD {L = ℕ}
+
+
+    {-     
+            3 ---->[T₁]--- 4
+          /                ↓    6       2
+        P₁                 P₂--> [t₃] -> P₃
+          \                ↑ 
+           2 ----->[T₂]--- 1
+    -}
+    data Places : Set where 
+        P₁ P₂ P₃  : Places
+
+    data Transitions : Set where 
+        T₁ T₂ T₃ : Transitions
+
+    instance 
+        T-dec : Dec Transitions
+        T-dec = MkDec _==_
+            where 
+                _==_ : Transitions → Transitions → Bool
+                T₁ == T₁ = true
+                T₂ == T₂ = true
+                T₃ == T₃ = true
+                _  == _  = false
+
+    {-     
+            3 ---->[T₁]--- 4
+          /                ↓    6       2
+        P₁                 P₂--> [t₃] -> P₃
+          \                ↑ 
+           2 ----->[T₂]--- 1
+    -}
+    --\blacktriangleright
+    net : Net
+    net = ▸A , A▸
+        where 
+            -- maps into places
+            ▸arrows : Places → Set 
+            ▸arrows P₁ = sub []
+            ▸arrows P₂ = sub (T₁ ∷ T₂ ∷ [])
+            ▸arrows P₃ = sub (T₃ ∷ [])
+
+            ▸values : (p : Places) → ▸arrows p → ℕ 
+            ▸values P₂ (T₁ , _) = 4
+            ▸values P₂ (T₂ , _) = 1
+            ▸values P₃ (T₃ , _) = 2
+
+            ▸A = ⟨ Places , ▸arrows , ▸values ⟩
+
+            -- maps out of places
+            arrows▸ : Places → Set 
+            arrows▸ P₁ = sub (T₁ ∷ T₂ ∷ [])
+            arrows▸ P₂ = sub (T₃ ∷ [])
+            arrows▸ P₃ = sub []
+
+            values▸ : (p : Places) → arrows▸ p → ℕ 
+            values▸ P₁ (T₁ , _) = 3
+            values▸ P₁ (T₂ , _) = 2
+            values▸ P₂ (T₃ , _) = 6
+            
+            A▸ = ⟨ Places , arrows▸ , values▸ ⟩
+
+
+module example-mapping where
+    open import Data.Bool
+    open import Data.List
+    open import Data.Nat hiding(_≥_)
+    open subtyping
+    
+    open import Nat -- the Lineale on ℕ
+    open DMLSet {L = ℕ} -- the Category Dependent Dialectical on ℕ
+    open Category NetL.NetL renaming (Ob to Net) -- The Petri net Category based on DMLSet ℕ
+    open import LDDialSet
+    open LD {L = ℕ}
+
+
+    data Places₁ : Set where 
+        P₁ P₂ P₃ : Places₁
+
+    data Places₂ : Set where 
+        P₄ P₅ : Places₂
+
+    data Transitions₁ : Set where 
+        T₁ : Transitions₁
+
+    data Transitions₂ : Set where 
+        T₂ : Transitions₂ 
+
+    instance 
+        _ : Dec Transitions₁
+        _ = MkDec (λ x y → true)
+
+        _ : Dec Transitions₂ 
+        _ = MkDec (λ x y → true)
+
+
+
+    {- 
+
+        P₁ 
+          \2     2
+           [T₁]---> P₃
+          /3
+        P₂
+    -}
+    net₁ : Net 
+    net₁ = ▸A , A▸
+        where 
+            ▸arrows : Places₁ → Set
+            ▸arrows P₁ = sub {Transitions₁} []
+            ▸arrows P₂ = sub {Transitions₁} []
+            ▸arrows P₃ = sub [ T₁ ]
+
+            ▸values : (p : Places₁) → ▸arrows p → ℕ
+            ▸values P₃ (T₁ , _) = 2
+            
+            ▸A = ⟨ Places₁ , ▸arrows , ▸values ⟩
+
+            arrows▸ : Places₁ → Set
+            arrows▸ P₁ = sub [ T₁ ]
+            arrows▸ P₂ = sub [ T₁ ]
+            arrows▸ P₃ = sub {Transitions₁} []
+
+            values▸ : (p : Places₁) → arrows▸ p → ℕ
+            values▸ P₁ (T₁ , _) = 2
+            values▸ P₂ (T₁ , _) = 3
+
+            A▸ = ⟨ Places₁ , arrows▸ , values▸ ⟩
+
+    {- 
+            2          1
+        P₄ ---> [T₂] ---> P₅
+    
+    -}
+    net₂ : Net 
+    net₂ = ▸A , A▸
+        where 
+            ▸arrows : Places₂ → Set
+            ▸arrows P₄ = sub {Transitions₂} []
+            ▸arrows P₅ = sub [ T₂ ]
+
+            ▸values : (p : Places₂) → ▸arrows p → ℕ
+            ▸values P₅ (T₂ , _) = 1
+            
+            ▸A = ⟨ Places₂ , ▸arrows , ▸values ⟩
+
+            arrows▸ : Places₂ → Set
+            arrows▸ P₄ = sub [ T₂ ]
+            arrows▸ P₅ = sub {Transitions₂} []
+
+            values▸ : (p : Places₂) → arrows▸ p → ℕ
+            values▸ P₄ (T₂ , _) = 2
+            A▸ = ⟨ Places₂ , arrows▸ , values▸ ⟩
+{- 
+
+        P₁ 
+          \2     2
+           [T₁]---> P₃
+          /1
+        P₂
+    -}
+    net₃ : Net 
+    net₃ = ▸A , A▸
+        where 
+            ▸arrows : Places₁ → Set
+            ▸arrows P₁ = sub {Transitions₁} []
+            ▸arrows P₂ = sub {Transitions₁} []
+            ▸arrows P₃ = sub [ T₁ ]
+
+            ▸values : (p : Places₁) → ▸arrows p → ℕ
+            ▸values P₃ (T₁ , _) = 2
+            
+            ▸A = ⟨ Places₁ , ▸arrows , ▸values ⟩
+
+            arrows▸ : Places₁ → Set
+            arrows▸ P₁ = sub [ T₁ ]
+            arrows▸ P₂ = sub [ T₁ ]
+            arrows▸ P₃ = sub {Transitions₁} []
+
+            values▸ : (p : Places₁) → arrows▸ p → ℕ
+            values▸ P₁ (T₁ , _) = 2
+            values▸ P₂ (T₁ , _) = 1
+
+            A▸ = ⟨ Places₁ , arrows▸ , values▸ ⟩
+
+
+    -- maps between nets!
+    open LDepDialSet
+    m₁ : net₁ ⇒ net₃
+    m₁ = ▸A⇒▸B , A▸⇒B▸
+        where   
+            ▸A = fst net₁
+            A▸ = snd net₁
+            ▸B = fst net₃
+            B▸ = snd net₃
+            
+            -- not changing positions
+            ▸posmap : Places₁ → Places₁
+            ▸posmap x = x
+
+            -- not changing arrows
+            ▸dirmap : (p : Places₁) → (▸B .dir) (▸posmap p) → (▸A .dir) p
+            ▸dirmap P₃ x = x
+            
+            ▸cond : (p : Places₁) → (d' : (▸B .dir )(▸posmap (▸posmap p))) → {!   !} ≥ {!   !}
+            ▸cond = {!   !}
+            ▸A⇒▸B = ▸posmap ∧ ▸dirmap st {!   !}
+
+            A▸⇒B▸ = {!  !}
+
+
+{-
 module examples where 
     open import Natcopy
     open import Data.Nat
@@ -137,20 +385,51 @@ module examples where
 
 
     data fin : ℕ → Set where 
-        z : fin 0
+        z : {n : ℕ} → fin n
         s : {n : ℕ} → fin n → fin (ℕ.suc n)
 
+    open import Data.List
+    open import Data.Empty
+    open import Data.Unit 
+    open import Data.Bool
     
-    sub : Set → ℕ → Set 
-    sub T n = fin n → T
+    record Dec (T : Set) : Set where
+        constructor MkDec 
+        field 
+            eqb : T → T → Bool 
+    open Dec{{...}}
 
+    instance
+        ℕ-dec : Dec ℕ 
+        ℕ-dec = MkDec _==_
+            where 
+                _==_ : ℕ → ℕ → Bool 
+                zero == zero = true
+                suc x == suc y = x == y
+                _ == _ = false
 
-    n₁' : Net -- something is wrong with this formalization... should have subsets
-    n₁' = ⟨ Places , (λ {P₁ → sub Trans'' 2
-                       ; P₂ → {!   !}
-                       ; P₃ → {!   !}}) , (λ {P₁ y → {!  !}
-                                            ; P₂ y → {!   !}
-                                            ; P₃ y → {!   !}}) ⟩ , {!   !}
+    inn : {T : Set}{{ _ : Dec T}} → (t : T) → (xs : List T) → Set
+    inn t [] = ⊥
+    inn t (x ∷ xs) with eqb t x
+    ...             | true  = ⊤
+    ...             | false = ⊥
+    
+    sub : {T : Set}{{_ : Dec T}} → List T → Set 
+    sub {T} xs = Σ[ t ∈ T ] inn t xs
+
+    _ : sub (4 ∷ 2 ∷ 7 ∷ [])
+    _ = 4 , tt
+   
+
+    n₁' : Net 
+    n₁' = ▸A , A▸
+        where 
+            ▸A = ⟨ Places , (λ{P₁ → sub {! T₁ ∷ [] !}
+                             ; P₂ → sub {!   !}
+                             ; P₃ → sub {!   !}}) , {!   !} ⟩
+
+            A▸ = ⟨ Places , {!   !} , {!   !} ⟩
+            
     n₁ : Net 
     n₁ = ⟨ Places , (λ{ P₁ → Trans
                       ; P₂ → Trans
@@ -211,4 +490,4 @@ module examples where
                                      ; P₃ D₁ → {!   !}}) ⟩ , ⟨ {!   !} , {!   !} , {!   !} ⟩
 
 -}
-    
+-}  
