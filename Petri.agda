@@ -331,8 +331,57 @@ module example-mapping where
             values▸ P₂ (T₁ , _) = 1
 
             A▸ = ⟨ Places₁ , arrows▸ , values▸ ⟩
+{- 
+
+        P₁ 
+          \2     1
+           [T₁]---> P₃
+          /1
+        P₂
+    -}
+    net₄ : Net 
+    net₄ = ▸A , A▸
+        where 
+            ▸arrows : Places₁ → Set
+            ▸arrows P₁ = sub {Transitions₁} []
+            ▸arrows P₂ = sub {Transitions₁} []
+            ▸arrows P₃ = sub [ T₁ ]
+
+            ▸values : (p : Places₁) → ▸arrows p → ℕ
+            ▸values P₃ (T₁ , _) = 1
+            
+            ▸A = ⟨ Places₁ , ▸arrows , ▸values ⟩
+
+            arrows▸ : Places₁ → Set
+            arrows▸ P₁ = sub [ T₁ ]
+            arrows▸ P₂ = sub [ T₁ ]
+            arrows▸ P₃ = sub {Transitions₁} []
+
+            values▸ : (p : Places₁) → arrows▸ p → ℕ
+            values▸ P₁ (T₁ , _) = 2
+            values▸ P₂ (T₁ , _) = 1
+
+            A▸ = ⟨ Places₁ , arrows▸ , values▸ ⟩
 
 
+
+    {- 
+
+        P₁ 
+          \2     2
+           [T₁]---> P₃
+          /3
+        P₂
+
+            ⟱   
+
+        P₁ 
+          \2     2
+           [T₁]---> P₃
+          /1
+        P₂
+        
+    -}
     -- maps between nets!
     open LDepDialSet
     m₁ : net₁ ⇒ net₃
@@ -344,18 +393,60 @@ module example-mapping where
             B▸ = snd net₃
             
             -- not changing positions
-            ▸posmap : Places₁ → Places₁
-            ▸posmap x = x
+            ▸f : Places₁ → Places₁
+            ▸f x = x
 
             -- not changing arrows
-            ▸dirmap : (p : Places₁) → (▸B .dir) (▸posmap p) → (▸A .dir) p
-            ▸dirmap P₃ x = x
+            ▸F : (p : Places₁) → (▸B .dir) (▸f p) → (▸A .dir) p
+            ▸F P₃ x = x
             
-            ▸cond : (p : Places₁) → (d' : (▸B .dir )(▸posmap (▸posmap p))) → {!   !} ≥ {!   !}
-            ▸cond = {!   !}
-            ▸A⇒▸B = ▸posmap ∧ ▸dirmap st {!   !}
+            ▸cond : (p : Places₁) → (d' : (▸B .dir)(▸f p)) → 
+                (▸A .α) p (▸F p d') ≥ (▸B .α) (▸f p) d'
+            ▸cond P₃ (T₁ , _) = ≥-refl -- 2 ≥ 2
+            
+            ▸A⇒▸B = ▸f ∧ ▸F st ▸cond 
 
-            A▸⇒B▸ = {!  !}
+            f▸ : Places₁ → Places₁ 
+            f▸ x = x
+
+            F▸ : (p : Places₁) → (B▸ .dir) (f▸ p) → (A▸ .dir) p
+            F▸ P₁ x = x
+            F▸ P₂ x = x
+
+            cond▸ : (p : Places₁) → (d' : (B▸ .dir)(f▸ p)) → 
+                (A▸ .α) p (F▸ p d') ≥ (B▸ .α) (f▸ p) d'
+            cond▸ P₁ (T₁ , _) = ≥-refl -- 2 ≥ 2
+            cond▸ P₂ (T₁ , _) = s≥s n≥z -- 3 ≥ 1  -- really the only thing that changes in this map
+
+            A▸⇒B▸ = f▸ ∧ F▸ st cond▸
+
+
+
+{- 
+
+                2          1
+        P₄ ---> [T₂] ---> P₅
+ 
+                ⟱
+                
+        P₁ 
+          \2     1
+           [T₁]---> P₃
+          /1
+        P₂
+    -}
+    m₂ : net₂ ⇒ net₄
+    m₂ = ▸A⇒▸B , A▸⇒B▸
+        where   
+            ▸A = fst net₂
+            A▸ = snd net₂
+            ▸B = fst net₄
+            B▸ = snd net₄ 
+
+            ▸A⇒▸B  = {!   !} ∧ {!   !} st {!   !}
+
+            A▸⇒B▸ = {!   !} ∧ {!   !} st {!   !}
+        
 
 
 {-
