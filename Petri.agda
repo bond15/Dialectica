@@ -424,7 +424,7 @@ module example-mapping where
 
 {- 
 
-                2          1
+           2          1
         P₄ ---> [T₂] ---> P₅
  
                 ⟱
@@ -443,10 +443,31 @@ module example-mapping where
             ▸B = fst net₄
             B▸ = snd net₄ 
 
-            ▸A⇒▸B  = {!   !} ∧ {!   !} st {!   !}
+            ▸f : Places₂ → Places₁
+            ▸f P₄ = P₁
+            ▸f P₅ = P₃
 
-            A▸⇒B▸ = {!   !} ∧ {!   !} st {!   !}
-        
+            ▸F : (p : Places₂) → (▸B .dir) (▸f p) → (▸A .dir) p
+            ▸F P₅ (T₁ , _) = T₂ , _
+
+            ▸cond : (p : Places₂) → (d' : (▸B .dir)(▸f p)) → 
+                (▸A .α) p (▸F p d') ≥ (▸B .α) (▸f p) d'
+            ▸cond P₅ (T₁ , _) = ≥-refl -- 1 ≥ 1
+
+            ▸A⇒▸B  = ▸f ∧ ▸F st ▸cond 
+
+            f▸ : Places₂ → Places₁
+            f▸ P₄ = P₁
+            f▸ P₅ = P₃
+
+            F▸ : (p : Places₂) → (B▸ .dir) (f▸ p) → (A▸ .dir) p
+            F▸ P₄ (T₁ , _) = T₂ , _
+            
+            cond▸ : (p : Places₂) → (d' : (B▸ .dir)(f▸ p)) → 
+                (A▸ .α) p (F▸ p d') ≥ (B▸ .α) (f▸ p) d'
+            cond▸ P₄ (T₁ , _) = ≥-refl -- 2 ≥ 2
+
+            A▸⇒B▸ = f▸ ∧ F▸ st cond▸
 
 
 {-
@@ -581,4 +602,4 @@ module examples where
                                      ; P₃ D₁ → {!   !}}) ⟩ , ⟨ {!   !} , {!   !} , {!   !} ⟩
 
 -}
--}  
+-}   
