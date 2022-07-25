@@ -19,7 +19,10 @@ module DMLSet
     open LD {L = L}
     open Category
     open Proset Pro
-
+{-
+    Not neccesaryily the case given the choice of relation on the carrirer of the Lineale.
+    Instead parameterize the definition of Category by then correct notion of equality on morphisms.
+-}
     module eq-map {A B : LDepDialSet}{m₁ m₂ : A ⇒L B} where
         open LDepDialSet A 
         open LDepDialSet B renaming (pos to pos'; dir to dir'; α to β)
