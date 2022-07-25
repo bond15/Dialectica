@@ -178,7 +178,7 @@ module examples where
 
     {-     
             3 ---->[T₁]--- 4
-          /                ↓    6       2
+          /                ↓   6       2
         P₁                 P₂--> [t₃] -> P₃
           \                ↑ 
            2 ----->[T₂]--- 1
@@ -279,6 +279,32 @@ module example-mapping where
             values▸ P₂ (T₁ , _) = 3
 
             A▸ = ⟨ Places₁ , arrows▸ , values▸ ⟩
+
+
+    getPlaces : (n : Net) → Set 
+    getPlaces n = pos
+        where 
+            open LD.LDepDialSet (fst n)
+
+
+    -- Net doesn't seem to just be a direct product.. we want the set of places to be the same?
+    record coherent (n : Net) : Set₁ where
+        open LD.LDepDialSet (fst n) renaming (pos to places₁)
+        open LD.LDepDialSet (snd n) renaming (pos to places₂)
+        field 
+            places≡ : places₁ ≡ places₂
+            --transitions≡ : (p₁ : places₁)(p₂ : places₂) → {!   !}
+
+
+    -- example trace
+    module tokengame (n : Net)(coh : coherent n) where 
+
+
+        record state : Set₁ where
+            field 
+                tokens : getPlaces n → ℕ
+                
+            
 
     {- 
             2          1
@@ -480,8 +506,6 @@ module example-mapping where
 
 
 
-    
-
 
 {-
 module examples where 
@@ -616,3 +640,4 @@ module examples where
 
 -}
 -}   
+ 
