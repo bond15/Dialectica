@@ -147,6 +147,7 @@ module examples where
     open Category NetL.NetL renaming (Ob to Net) -- The Petri net Category based on DMLSet ℕ
     open import LDDialSet
     open LD {L = ℕ}
+    open NetL
 
 
     {-     
@@ -468,6 +469,15 @@ module example-mapping where
             cond▸ P₄ (T₁ , _) = ≥-refl -- 2 ≥ 2
 
             A▸⇒B▸ = f▸ ∧ F▸ st cond▸
+
+
+    open NetL
+    net₅ : Net
+    net₅ = net₁ ⨂ net₂
+
+
+
+    
 
 
 {-
