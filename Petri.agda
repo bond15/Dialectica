@@ -7,6 +7,35 @@ open import Cubical.Core.Everything
 open import Cubical.Foundations.Prelude using (refl)
 
 
+module demo where 
+    
+module subtyping {ℓ : Level} where
+    open import Data.Bool
+    open import Data.Empty
+    open import Data.List
+    open import Data.Nat
+    open import Data.Unit
+
+    -- decidable equality
+    record Dec (T : Set ℓ) : Set ℓ where
+        constructor MkDec 
+        field 
+            eqb : T → T → Bool 
+    open Dec{{...}}
+
+    _∈_ : {T : Set ℓ}{{ _ : Dec T}} → (t : T) → (xs : List T) → Set ℓ
+    _∈_ t [] = Lift ℓ ⊥
+    _∈_ t (x ∷ xs) with eqb t x
+    ...             | true  = Lift ℓ ⊤
+    ...             | false = t ∈ xs
+        
+    -- A subset of a type with decidable equality
+    sub : {T : Set ℓ}{{_ : Dec T}} → List T → Set ℓ
+    sub {T} xs = Σ[ t ∈ T ] (t ∈ xs)
+
+    powerset : (T : Set ℓ)⦃ _ : Dec T ⦄ → Set ℓ 
+    powerset T = Σ (List T) λ xs → sub xs
+
 module DMLSet 
     {o : Level}
     {L : Set o} 
@@ -111,33 +140,34 @@ module DMLSet
         _⋀_ : Net → Net → Net 
         (▸A , A▸) ⋀ (▸B , B▸) = (▸A & ▸B) , (A▸ & B▸)
 
+    module Petri where
+        open subtyping
+        open import Level
+        open import Data.List
+
+        {-record PetriOb (tr : Set o) : Set (suc o) where 
+            constructor ⟨_,_,_⟩
+            field 
+                place : Set o
+                tran : place → Σ (List tr) λ xs → Lift _ {! sub xs  !}
+                --α' : (p : place) → tran p → L -}
+
+    {-}
+        PetriCat : Category (suc o) o 
+        PetriCat .Ob = LDepDialSet
+        PetriCat ._⇒_ = _⇒L_
+        PetriCat .id  = (λ p → p) ∧ (λ p d → d) st (λ p d → prefl)
+        PetriCat ._∘_ = _∘L_
+        PetriCat .idr = eq-map refl refl
+        PetriCat .idl = eq-map refl refl
+        PetriCat .assoc = eq-map refl refl   
+        -}     
+
 
         -- examples
 
 
-module subtyping where
-    open import Data.Bool
-    open import Data.Empty
-    open import Data.List
-    open import Data.Nat
-    open import Data.Unit
 
-    -- decidable equality
-    record Dec (T : Set) : Set where
-        constructor MkDec 
-        field 
-            eqb : T → T → Bool 
-    open Dec{{...}}
-
-    _∈_ : {T : Set}{{ _ : Dec T}} → (t : T) → (xs : List T) → Set
-    _∈_ t [] = ⊥
-    _∈_ t (x ∷ xs) with eqb t x
-    ...             | true  = ⊤
-    ...             | false = t ∈ xs
-        
-    -- A subset of a type with decidable equality
-    sub : {T : Set}{{_ : Dec T}} → List T → Set 
-    sub {T} xs = Σ[ t ∈ T ] (t ∈ xs)
 
 module examples where
     open import Data.Nat
@@ -260,8 +290,8 @@ module example-mapping where
     net₁ = ▸A , A▸
         where 
             ▸arrows : Places₁ → Set
-            ▸arrows P₁ = sub {Transitions₁} []
-            ▸arrows P₂ = sub {Transitions₁} []
+            ▸arrows P₁ = sub {T = Transitions₁} []
+            ▸arrows P₂ = sub {T = Transitions₁} []
             ▸arrows P₃ = sub [ T₁ ]
 
             ▸values : (p : Places₁) → ▸arrows p → ℕ
@@ -272,7 +302,7 @@ module example-mapping where
             arrows▸ : Places₁ → Set
             arrows▸ P₁ = sub [ T₁ ]
             arrows▸ P₂ = sub [ T₁ ]
-            arrows▸ P₃ = sub {Transitions₁} []
+            arrows▸ P₃ = sub {T = Transitions₁} []
 
             values▸ : (p : Places₁) → arrows▸ p → ℕ
             values▸ P₁ (T₁ , _) = 2
@@ -299,10 +329,13 @@ module example-mapping where
     -- example trace
     module tokengame (n : Net)(coh : coherent n) where 
 
+        State : Set 
+        State = getPlaces n → ℕ
 
-        record state : Set₁ where
-            field 
-                tokens : getPlaces n → ℕ
+        -- chose transition to fire
+
+
+       -- data ValidTransition : Net → Net → Set₁ where
                 
             
 
@@ -315,7 +348,7 @@ module example-mapping where
     net₂ = ▸A , A▸
         where 
             ▸arrows : Places₂ → Set
-            ▸arrows P₄ = sub {Transitions₂} []
+            ▸arrows P₄ = sub {T = Transitions₂} []
             ▸arrows P₅ = sub [ T₂ ]
 
             ▸values : (p : Places₂) → ▸arrows p → ℕ
@@ -325,7 +358,7 @@ module example-mapping where
 
             arrows▸ : Places₂ → Set
             arrows▸ P₄ = sub [ T₂ ]
-            arrows▸ P₅ = sub {Transitions₂} []
+            arrows▸ P₅ = sub {T = Transitions₂} []
 
             values▸ : (p : Places₂) → arrows▸ p → ℕ
             values▸ P₄ (T₂ , _) = 2
@@ -342,8 +375,8 @@ module example-mapping where
     net₃ = ▸A , A▸
         where 
             ▸arrows : Places₁ → Set
-            ▸arrows P₁ = sub {Transitions₁} []
-            ▸arrows P₂ = sub {Transitions₁} []
+            ▸arrows P₁ = sub {T = Transitions₁} []
+            ▸arrows P₂ = sub {T = Transitions₁} []
             ▸arrows P₃ = sub [ T₁ ]
 
             ▸values : (p : Places₁) → ▸arrows p → ℕ
@@ -354,7 +387,7 @@ module example-mapping where
             arrows▸ : Places₁ → Set
             arrows▸ P₁ = sub [ T₁ ]
             arrows▸ P₂ = sub [ T₁ ]
-            arrows▸ P₃ = sub {Transitions₁} []
+            arrows▸ P₃ = sub {T = Transitions₁} []
 
             values▸ : (p : Places₁) → arrows▸ p → ℕ
             values▸ P₁ (T₁ , _) = 2
@@ -373,8 +406,8 @@ module example-mapping where
     net₄ = ▸A , A▸
         where 
             ▸arrows : Places₁ → Set
-            ▸arrows P₁ = sub {Transitions₁} []
-            ▸arrows P₂ = sub {Transitions₁} []
+            ▸arrows P₁ = sub {T = Transitions₁} []
+            ▸arrows P₂ = sub {T = Transitions₁} []
             ▸arrows P₃ = sub [ T₁ ]
 
             ▸values : (p : Places₁) → ▸arrows p → ℕ
@@ -385,7 +418,7 @@ module example-mapping where
             arrows▸ : Places₁ → Set
             arrows▸ P₁ = sub [ T₁ ]
             arrows▸ P₂ = sub [ T₁ ]
-            arrows▸ P₃ = sub {Transitions₁} []
+            arrows▸ P₃ = sub {T = Transitions₁} []
 
             values▸ : (p : Places₁) → arrows▸ p → ℕ
             values▸ P₁ (T₁ , _) = 2
@@ -640,4 +673,4 @@ module examples where
 
 -}
 -}   
- 
+  
