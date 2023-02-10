@@ -84,7 +84,18 @@ module CatLib where
 
 
 
-            
+    module ProductCat  where 
+        open Category
+        open import Data.Product
+        open import Function hiding (id; _∘_)
+        Product : {o o' h h' : Level} → Category o h → Category o' h' → Category (o ⊔ o') (h ⊔ h')
+        Product C D .Ob = C .Ob × D .Ob
+        (Product C D ⇒ (C₁ , D₁)) (C₂ , D₂) = (C ._⇒_) C₁ C₂ × (D ._⇒_) D₁ D₂
+        Product C D .id = (C .id) , (D .id)
+        Product C D ._∘_ = zip (C ._∘_) (D ._∘_)
+        Product C D .idr {f = f , g} = λ i → ((C .idr {f = f}) i) , D .idr {f = g} i
+        Product C D .idl {f = f , g} = λ i → C .idl {f = f} i , D .idl {f = g} i 
+        Product C D .assoc {f = f₁ , f₂} {g₁ , g₂} {h₁ , h₂} = λ i → C .assoc {f = f₁}{g₁}{h₁} i , D .assoc {f = f₂}{g₂}{h₂} i
                 
 
     module BinaryProducts {o h} (𝒞 : Category o h) where
@@ -232,9 +243,9 @@ module CatLib where
         record BiFunctorT : Set (levelOfTerm 𝒞) where 
             field
                 F₀ : Obᵇ → Obᶜ → Obᵈ
-                F₁ : {A A' : Obᵇ}{B B' : Obᶜ} → (f : A ⇒ᵇ A')(g : B ⇒ᶜ B') → F₀ A B ⇒ᵈ F₀ A' B'
+                F₁ : {A B : Obᵇ}{C D : Obᶜ} → (f : A ⇒ᵇ B)(g : C ⇒ᶜ D) → F₀ A C ⇒ᵈ F₀ B D
 
-                Fid : {A : Obᵇ}{B : Obᶜ} → F₁ (idᵇ {A}) (idᶜ {B}) ≡ idᵈ { F₀ A B }
+                Fid : {A : Obᵇ}{C : Obᶜ} → F₁ (idᵇ {A}) (idᶜ {C}) ≡ idᵈ { F₀ A C }
                 Fcomp : {A B C : Obᵇ}{f  : A ⇒ᵇ B}{g  : B ⇒ᵇ C}
                         {X Y Z : Obᶜ}{f' : X ⇒ᶜ Y}{g' : Y ⇒ᶜ Z}
                     → F₁ (g ∘ᵇ f) (g' ∘ᶜ f') ≡ (F₁ g  g' ∘ᵈ F₁ f f')
@@ -319,3 +330,42 @@ module CatLib where
                                                 ≡ 
                                                     α⇒ ⇒⟨ ((X ⊗₀ Y) ⊗₀ Z ⊗₀ W) ⟩ 
                                                     α⇒ ⟩
+    module NaturalTransformation where 
+        open Functor
+        record NaturalTransformation {o ℓ : Level}{C : Category o ℓ}
+                             {D : Category o ℓ}
+                             (F G : FunctorT C D) : Set (o ⊔ ℓ ) where
+            eta-equality
+            private
+                module F = FunctorT F
+                module G = FunctorT G
+            open F using (F₀; F₁)
+            open Category D 
+
+            field
+                η           : {!   !} --∀ X → D [ F₀ X , G.F₀ X ]
+                commute     : {!   !} --∀ {X Y} (f : C [ X , Y ]) → η Y ∘ F₁ f ≈ G.F₁ f ∘ η X
+    module Adjoint where 
+        open import Level using (levelOfTerm)
+        open import Categories.NaturalTransformation 
+        _ : NaturalTransformation {!   !} {!   !} 
+        _ = {!   !}
+{-        open Functor
+        record AdjointT {C D : Category}(L : FunctorT C D) (R : FunctorT D C) : Set (levelOfTerm L ⊔ levelOfTerm R) where
+            private
+                module C = Category C
+                module D = Category D
+                module L = Functor L
+                module R = Functor R
+
+            field
+                unit   : NaturalTransformation idF (R ∘F L)
+                counit : NaturalTransformation (L ∘F R) idF
+
+            module unit = NaturalTransformation unit
+            module counit = NaturalTransformation counit
+
+            field
+                zig : ∀ {A : C.Obj} → counit.η (L.F₀ A) D.∘ L.F₁ (unit.η A) D.≈ D.id
+                zag : ∀ {B : D.Obj} → R.F₁ (counit.η B) C.∘ unit.η (R.F₀ B) C.≈ C.id
+                    -} 

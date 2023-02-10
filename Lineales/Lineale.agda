@@ -29,8 +29,8 @@ record MonProset {ℓ : Level}(P : Set ℓ){{ _ : Proset P}} : Set (lsuc ℓ) wh
    left-ident : ∀{a : P} → unit ⊙ a ≡ a
    right-ident : ∀{a : P} → a ⊙ unit ≡ a
 
-   symm : ∀{a b : P} → a ⊙ b ≡ b ⊙ a
-   compat : ∀{a b : P} → rel a b → (∀{c : P} → (rel (a ⊙ c) (b ⊙ c)))
+   compatˡ : ∀{a b : P} → rel a b → (∀{c : P} → (rel (c ⊙ a) (c ⊙ b)))
+   compatʳ : ∀{a b : P} → rel a b → (∀{c : P} → (rel (a ⊙ c) (b ⊙ c)))
 open MonProset {{...}}
 
 record Lineale {ℓ : Level} (L : Set ℓ) {{ _ : Proset L }} {{ _ : MonProset L}}: Set (lsuc ℓ) where
@@ -43,7 +43,8 @@ record Lineale {ℓ : Level} (L : Set ℓ) {{ _ : Proset L }} {{ _ : MonProset L
         adj : {a b y : L} → rel (a ⊙ y) b → rel y (a ⊸ b)
 open Lineale {{...}}
 
--- random examples
+-- TODO: helper lemmas
+{- 
 module _ {ℓ}{L : Set ℓ} 
   {{ _ : Proset L}}
   {{ _ : MonProset L }}
@@ -105,5 +106,5 @@ module _ {ℓ}{L : Set ℓ}
   ex₄ : ∀{a b c d x : L} → rel (c ⊙ a ⊙ unit ⊙ d ⊙ b) x → rel a (d ⊸ (c ⊸ (b ⊸ x)))
   ex₄ t = let aUNITd|c⊸b⊸x = adj (relassocl' (relassocl' (adj (relsyml t))))
           in adj (relidl (relassocl' (relsyml aUNITd|c⊸b⊸x)))
-
+-}
  
