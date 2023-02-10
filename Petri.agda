@@ -61,6 +61,8 @@ module DMLSet
 
         open Proset Pro renaming (rel to _≤_)
 
+        -- This is false unless we have that the relation is a Set (HoTT Set)
+        -- What do we want to use?
         eq-cond : (f≡g : f ≡ g) → (F≡G : PathP (λ i → (p : pos) → dir' ((f≡g i) p) → dir p) F G) → 
             PathP (λ i → (p : pos) → (d' : dir' ((f≡g i) p)) → α p (F≡G i  p d') ≤ β (f≡g i p) d') cond₁ cond₂ 
         eq-cond = {!   !}
